@@ -199,11 +199,13 @@ void moveFairyDFS(int r, int c) {
         }
     }
 
-
     return;
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
     cin >> R >> C >> K;
     for (int i = 1; i <= K; i++)
     {
