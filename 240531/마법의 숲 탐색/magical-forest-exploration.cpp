@@ -128,7 +128,7 @@ void moveGolem(int cnt) {
             centerR += 1;
             centerC -= 1;
 
-            exitDir = (exitDir - 1) % 4;
+            exitDir = (exitDir + 3) % 4;
         }
         else if (isPossibleGoRight()) {
             centerR += 1;
