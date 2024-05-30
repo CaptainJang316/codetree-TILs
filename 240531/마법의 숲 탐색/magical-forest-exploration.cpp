@@ -210,10 +210,7 @@ int main() {
     for (int i = 1; i <= K; i++)
     {
         cin >> golemList[i].c >> golemList[i].exitDir;
-    }
 
-    for (int i = 1; i <= K; i++)
-    {
         moveGolem(i);
 
         maxRow = 0;
