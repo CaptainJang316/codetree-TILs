@@ -51,7 +51,7 @@ bool isPossibleGoBottom() {
 }
 bool isPossibleGoLeft() {
     if (bottom.r < 1) {
-        if (map[bottom.r + 1][bottom.c - 1] == 0 && !isOutOfBound(leftSpot.r, leftSpot.c - 1)) return true;
+        if (map[bottom.r + 1][bottom.c - 1] == 0 && 1 < leftSpot.c) return true; // <-- 성급한 일반화로 예외 오류 발생!
         return false;
     }
     else if (bottom.r == 1) {
@@ -81,7 +81,7 @@ bool isPossibleGoLeft() {
 }
 bool isPossibleGoRight() {
     if (bottom.r < 1) {
-        if (map[bottom.r + 1][bottom.c + 1] == 0 && !isOutOfBound(rightSpot.r, rightSpot.c + 1)) return true;
+        if (map[bottom.r + 1][bottom.c + 1] == 0 && rightSpot.c < C) return true; // <-- 성급한 일반화로 예외 오류 발생!
         return false;
     }
     else if (bottom.r == 1) {
