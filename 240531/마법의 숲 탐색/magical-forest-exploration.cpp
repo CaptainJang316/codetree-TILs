@@ -182,9 +182,8 @@ void moveFairyDFS(int r, int c) {
 
     for (int dir = 0; dir < 4; dir++)
     {
-        currDir = (dir + 2) % 4;
-        nextR = r + exitDr[currDir];
-        nextC = c + exitDc[currDir];
+        nextR = r + exitDr[dir];
+        nextC = c + exitDc[dir];
 
         if (!isOutOfBound(nextR, nextC) && map[nextR][nextC] != 0 && visited[nextR][nextC] != 1) {
             if (map[nextR][nextC] == currentValue) {
@@ -200,60 +199,19 @@ void moveFairyDFS(int r, int c) {
         }
     }
 
+
     return;
 }
 
-// void moveFairyBFS(int r, int c) {
-//     vector<vector<int>> visited(71, vector<int>(71, 0));
-//     queue<Spot> spotQueue;
-//     spotQueue.push({r, c});
-
-//     while(!spotQueue.empty()) {
-//         int currR = spotQueue.front().r;
-//         int currC = spotQueue.front().c;
-//         spotQueue.pop();
-
-//         if(maxRow < currR) maxRow = currR;
-
-//         int nextR, nextC;
-//         int currentValue = map[currR][currC];
-
-//         for (int dir = 0; dir < 4; dir++)
-//         {
-//             nextR = currR + exitDr[dir];
-//             nextC = currC + exitDc[dir];
-
-//             if (!isOutOfBound(nextR, nextC) && map[nextR][nextC] != 0 && visited[nextR][nextC] != 1) {
-//                 if (map[nextR][nextC] == currentValue) {
-//                     visited[nextR][nextC] = 1;
-//                     spotQueue.push({nextR, nextC});
-//                 }
-//                 else if (exitMap[currR][currC] == 1) {
-//                     visited[nextR][nextC] = 1;
-//                     spotQueue.push({nextR, nextC});
-//                 }
-//             }
-//         }
-//     }
-
-//     visited.clear();
-
-//     return;
-// }
-
-//////////////////////////////////////////////////////////////
-// 왜 위의 DFS보다 아래의 BFS가 빠른 거지....? <-- 엄청난 의문 //
-//////////////////////////////////////////////////////////////
-
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
     cin >> R >> C >> K;
     for (int i = 1; i <= K; i++)
     {
         cin >> golemList[i].c >> golemList[i].exitDir;
+    }
 
+    for (int i = 1; i <= K; i++)
+    {
         moveGolem(i);
 
         maxRow = 0;
