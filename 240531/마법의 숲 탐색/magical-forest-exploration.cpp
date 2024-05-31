@@ -24,7 +24,6 @@ int total = 0;
 int maxRow = 0;
 vector<vector<int>> map(71, vector<int>(71, 0));
 vector<vector<int>> exitMap(71, vector<int>(71, 0));
-vector<vector<int>> visited(71, vector<int>(71, 0));
 vector<Golem> golemList(1001);
 Spot leftSpot;
 Spot rightSpot;
@@ -171,33 +170,71 @@ void moveGolem(int cnt) {
     }
 }
 
-//이 문제에서는 '정령의 최종 위치의 행 번호의 합'을 구해야 하기에 각 정령이 도달하게 되는 최종의 가장 아래 위치를 누적해야 합니다.
-void moveFairyDFS(int r, int c) {
-    if (maxRow < r) {
-        maxRow = r;
-    }
+// //이 문제에서는 '정령의 최종 위치의 행 번호의 합'을 구해야 하기에 각 정령이 도달하게 되는 최종의 가장 아래 위치를 누적해야 합니다.
+// void moveFairyDFS(int r, int c) {
+//     if (maxRow < r) {
+//         maxRow = r;
+//     }
 
-    int nextR, nextC;
-    int currentValue = map[r][c];
+//     int nextR, nextC;
+//     int currentValue = map[r][c];
 
-    for (int dir = 0; dir < 4; dir++)
-    {
-        nextR = r + exitDr[dir];
-        nextC = c + exitDc[dir];
+//     for (int dir = 0; dir < 4; dir++)
+//     {
+//         nextR = r + exitDr[dir];
+//         nextC = c + exitDc[dir];
 
-        if (!isOutOfBound(nextR, nextC) && map[nextR][nextC] != 0 && visited[nextR][nextC] != 1) {
-            if (map[nextR][nextC] == currentValue) {
-                visited[nextR][nextC] = 1;
-                moveFairyDFS(nextR, nextC);
-                visited[nextR][nextC] = 0;
-            }
-            else if (exitMap[r][c] == 1) {
-                visited[nextR][nextC] = 1;
-                moveFairyDFS(nextR, nextC);
-                visited[nextR][nextC] = 0;
+//         if (!isOutOfBound(nextR, nextC) && map[nextR][nextC] != 0 && visited[nextR][nextC] != 1) {
+//             if (map[nextR][nextC] == currentValue) {
+//                 visited[nextR][nextC] = 1;
+//                 moveFairyDFS(nextR, nextC);
+//                 visited[nextR][nextC] = 0;
+//             }
+//             else if (exitMap[r][c] == 1) {
+//                 visited[nextR][nextC] = 1;
+//                 moveFairyDFS(nextR, nextC);
+//                 visited[nextR][nextC] = 0;
+//             }
+//         }
+//     }
+
+//     return;
+// }
+
+void moveFairyBFS(int r, int c) {
+    vector<vector<int>> visited(71, vector<int>(71, 0));
+    queue<Spot> spotQueue;
+    spotQueue.push({r, c});
+
+    while(!spotQueue.empty()) {
+        int currR = spotQueue.front().r;
+        int currC = spotQueue.front().c;
+        spotQueue.pop();
+
+        if(maxRow < currR) maxRow = currR;
+
+        int nextR, nextC;
+        int currentValue = map[currR][currC];
+
+        for (int dir = 0; dir < 4; dir++)
+        {
+            nextR = currR + exitDr[dir];
+            nextC = currC + exitDc[dir];
+
+            if (!isOutOfBound(nextR, nextC) && map[nextR][nextC] != 0 && visited[nextR][nextC] != 1) {
+                if (map[nextR][nextC] == currentValue) {
+                    visited[nextR][nextC] = 1;
+                    spotQueue.push({nextR, nextC});
+                }
+                else if (exitMap[currR][currC] == 1) {
+                    visited[nextR][nextC] = 1;
+                    spotQueue.push({nextR, nextC});
+                }
             }
         }
     }
+
+    visited.clear();
 
     return;
 }
@@ -214,7 +251,7 @@ int main() {
         moveGolem(i);
 
         maxRow = 0;
-        if (isSuccessed) moveFairyDFS(golemList[i].r, golemList[i].c);
+        if (isSuccessed) moveFairyBFS(golemList[i].r, golemList[i].c);
 
         total += maxRow;
     }
