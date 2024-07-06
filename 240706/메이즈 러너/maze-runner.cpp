@@ -125,7 +125,7 @@ bool compare(SquareInfo& spot1, SquareInfo& Spot2) {
 void rotate(SquareInfo squreEdge) {
     vector<vector<int>> map_copy(map);
     bool isExitRotate = false;
-
+    //cout << "squreEdge: " << squreEdge.r << " " << squreEdge.c << " " << squreEdge.size << endl;
     for (int r = 0; r <= squreEdge.size; r++)
     {
         for (int c = 0; c <= squreEdge.size; c++)
@@ -208,6 +208,7 @@ void findSqureBFS() {
     }
 
     int sqrR, sqrC, biggerV, diffR, diffC;
+    //cout << "candidateList.size(): " << candidateList.size() << endl;
     for (int i = 0; i < candidateList.size(); i++)
     {
         r = candidateList[i].r;
@@ -216,8 +217,6 @@ void findSqureBFS() {
         diffR = abs(exitSpot.r - r);
         diffC = abs(exitSpot.c - c);
         biggerV = max(diffR, diffC);
-
-        //cout << "biggerV: " << biggerV << endl;
 
         int standR = max(r, exitSpot.r);
         int standC = max(c, exitSpot.c);
@@ -254,7 +253,6 @@ void findSqureBFS() {
     }
 
     sort(squareInfoList.begin(), squareInfoList.end(), compare);
-
     rotate(squareInfoList[0]);
 }
 
@@ -296,9 +294,11 @@ int main() {
         //    cout << endl;
         //}
 
+        if (runnerList.size() == 0) break;
+
         findSqureBFS();
 
-        //cout << "====== findSqureBFS move =======" << endl;
+        //cout << "====== after rotate =======" << endl;
         //for (int r = 1; r <= N; r++)
         //{
         //    for (int c = 1; c <= N; c++)
