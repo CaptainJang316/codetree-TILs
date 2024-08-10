@@ -192,11 +192,12 @@ int main() {
                 redMove(i, r, c, nr, nc);
                 if (isEnd) break;
             }
-            else
-            {
-                d = changeDir(d);
-                piece[i].d = d;
-            }
+            // 문제를 잘못 이해함;;
+            //else
+            //{
+            //    d = changeDir(d);
+            //    piece[i].d = d;
+            //}
         }
         if (isEnd) break;
 
