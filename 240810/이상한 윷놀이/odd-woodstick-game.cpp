@@ -70,7 +70,7 @@ int dc[] = { 100, 1, -1, 0, 0 };
 
 int n, k;
 vector<vector<deque<int>>> pMap(13, vector<deque<int>>(13, deque<int>()));
-vector<vector<int>> colorMap(13, vector<int>(13, 0));
+vector<vector<int>> colorMap(13, vector<int>(13, -1));
 vector<Info> piece(10);
 bool isEnd = false;
 
@@ -190,11 +190,11 @@ int main() {
                 nr = r + dr[d];
                 nc = c + dc[d];
 
-                // 방향을 바꾼 후에도 여전히 맵 밖이거나 파란색이면 이동하지 않음
-                if (!isInBound(nr, nc) || colorMap[nr][nc] == 2)
-                {
-                    continue;  // 다음 말로 넘어감
-                }
+                //// 방향을 바꾼 후에도 여전히 맵 밖이거나 파란색이면 이동하지 않음
+                //if (!isInBound(nr, nc) || colorMap[nr][nc] == 2)
+                //{
+                //    continue;  // 다음 말로 넘어감
+                //}
             }
 
             if (colorMap[nr][nc] == 0)
