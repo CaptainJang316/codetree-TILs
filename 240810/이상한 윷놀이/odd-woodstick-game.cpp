@@ -1,4 +1,4 @@
-// 8:10 ~ 9:00, 12:52 ~ 2:50
+// 8:10 ~ 9:00, 12:52 ~ 4:00 <- 거의 4시간 꽉 채움, 혹은 넘음;;;
 
 // n * n 격자판
 
@@ -52,6 +52,13 @@
 
 
 // ** map들을 필요에 의해 별도로 관리하더라도, 초기 세팅은 잊지 않고 잘 해놔야 한다...!!(자칫 빈 칸으로 시작할 수 있다..!)
+// ** 문제를 똑바로 이해해야 한다..! 설명이 명확하지 않고 찍어서 이해해야 할 것 같은 부분은, 내가 뭘 놓친 거다. 설명이나, 예제에라도 분명히 답이 있다.
+// 
+// ** whiteMove 가동 조건: colorMap[nr][nc] == 0,
+//    colorMap 범위는(1,1) ~ (n,n)까지 쓰기 위해 n+1*n+1 로 설정하고 0으로 초기화되어 있었다.
+//    => 여기서 로직 구멍 발생...!!! 
+//      ==> 따라서, 선언시에, 애초에 조건문에 쓰이지 않는 값으로(ex. -1)로 초기화를 정하거나, Bound 체크를 그 때 그 때 다시 해줘야 한다! 
+
 
 #include <iostream>
 #include <vector>
@@ -86,7 +93,7 @@ int changeDir(int d) {
 }
 
 void whiteMove(int idx, int r, int c, int nr, int nc) {
-    for (int i = pMap[r][c].size()-1; 0 <= i; i--)
+    for (int i = pMap[r][c].size() - 1; 0 <= i; i--)
     {
         if (pMap[r][c][i] == idx)
         {
@@ -154,17 +161,6 @@ int main() {
         pMap[piece[i].r][piece[i].c].push_back(i);
     }
 
-    //cout << endl;
-    //for (int r = 1; r <= n; r++)
-    //{
-    //    for (int c = 1; c <= n; c++)
-    //    {
-    //        cout << pMap[r][c].size() << " ";
-    //    }
-    //    cout << endl;
-    //}
-    //cout << endl;
-
     int turnCnt = 1;
     while (true)
     {
@@ -191,12 +187,15 @@ int main() {
                 nc = c + dc[d];
 
                 //// 방향을 바꾼 후에도 여전히 맵 밖이거나 파란색이면 이동하지 않음
-                //if (!isInBound(nr, nc) || colorMap[nr][nc] == 2)
+                // => 이 코드를 달았더니 Pass가 떴다. 근데, 그게 이상했다. 이게 있으나 없으나 다른 게 없는데.... 알고보니,
+                //if (!isInBound(nr, nc) || colorMap[nr][nc] == 2) 
                 //{
                 //    continue;  // 다음 말로 넘어감
                 //}
             }
 
+            // 여기가 문제였던 것. Bound체크는 위에서 한 번만 하고 있고, 거기거 팅겨서 방향 바뀌었을 땐 체크하지 않는다.
+            // => 문제는, 쓰면 안되는 범위(0,0)라인도 0으로 초기화되어 있음.... 벽으로 인식해서 넘어가야 하는데, 그러질 않도록 구현되어 있었다..!
             if (colorMap[nr][nc] == 0)
             {
                 whiteMove(i, r, c, nr, nc);
@@ -207,6 +206,7 @@ int main() {
                 redMove(i, r, c, nr, nc);
                 if (isEnd) break;
             }
+
             // 문제를 잘못 이해함;;
             //else
             //{
