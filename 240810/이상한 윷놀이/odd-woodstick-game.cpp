@@ -1,228 +1,218 @@
-// 11:11 ~ 1:23, 2:12 ~ 2:46, 11:28 ~ 12:32
+// 8:10 ~ 9:00, 12:52 ~ 2:50
 
-// 새로운 게임은 크기가 N×N인 체스판에서 진행되고, 사용하는 말의 개수는 K개이다.
-// 
-// 말은 원판모양이고, 하나의 말 위에 다른 말을 올릴 수 있다. 
-// 체스판의 각 칸은 흰색, 빨간색, 파란색 중 하나로 색칠되어있다.
+// n * n 격자판
 
-// 게임은 체스판 위에 말 K개를 놓고 시작한다. 
-// 말은 1번부터 K번까지 번호가 매겨져 있고, 이동 방향도 미리 정해져 있다. 
-// 이동 방향은 위, 아래, 왼쪽, 오른쪽 4가지 중 하나이다.
+// 격자판은 흰색, 빨간색, 파란색 중 하나의 색을 가지고 있습니다.
+// 말은 총 k개가 주어지며, 모두 격자판의 한 지점에 놓여있습니다. 
+// '1번부터 k번까지' 번호가 지정되어 있으며 이동 방향 또한 미리 정해져있습니다. 
+// 상하좌우의 4가지 방향으로 움직일 수 있습니다.
 
-// 턴 한 번은 1번 말부터 K번 말까지 순서대로 이동시키는 것이다. 한 말이 이동할 때 위에 올려져 있는 말도 함께 이동한다. 
-// 말의 이동 방향에 있는 칸에 따라서 말의 이동이 다르며 아래와 같다. 턴이 진행되던 중에 말이 4개 이상 쌓이는 순간 게임이 종료된다.
+// 턴 한 번동안 1번 말부터 k번 말까지 규칙대로 '순서대로' 움직입니다. 
+// 말을 옮기는 규칙은 다음과 같습니다.
 
-// 기존에 말이 있으면 그 위에 쌓는다.
-// 흰색으로 이동 -> 그대로 위에 쌓는다.
-// 빨간색으로 이동 -> 기존의 말들은 그대로, 그 위에 새로 온것들의 순서를 바꿔서 쌓는다.
-// 파란색 or 범위 밖으로 이동 -> 반대방향으로 한 칸 이동(if 거기도 파란색이면 이동하지 않음.)
+// 1. 말이 이동하려는 칸이 흰색인 경우에는 해당 칸으로 이동합니다. 
+// 이동하려는 칸에 말이 이미 있는 경우에는, '해당 말 위에' 이동하려던 말을 올려둡니다. 이미 말이 올려져 있는 상태에도 말을 올릴 수 '있습니다'.
+// => 밑바닥에 있는 것부터 옆칸의 top으로 옮긴다.
 
-// 체스판의 크기와 말의 위치, 이동 방향이 모두 주어졌을 때, 게임이 종료되는 턴의 번호를 구해보자.
+// 2. 이동하려는 칸이 빨간색인 경우에는 해당 칸으로 '이동하기 전', '(현재 칸의) 순서를 뒤집습니다.'
+// 이후, 해당 칸에 말이 있는 경우에는 흰색 칸과 같이 '그 위에 쌓아둡니다.'
+// => 가려는 칸이 빨간색이면, 현재 칸에 쌓인 것들(전부)의 순서를 뒤집어서 가려는 칸에 있는 말들 위에 쌓는다.(현재 칸의 top에 있는 것부터 옆칸의 top으로 옮긴다.) 
 
-// 첫째 줄에 체스판의 크기 N, 말의 개수 K가 주어진다. 
-// 둘째 줄부터 N개의 줄에 체스판의 정보가 주어진다. 체스판의 정보는 정수로 이루어져 있고, 각 정수는 칸의 색을 의미한다. 0은 흰색, 1은 빨간색, 2는 파란색이다.
-// 
-// 다음 K개의 줄에 말의 정보가 1번 말부터 순서대로 주어진다.말의 정보는 세 개의 정수로 이루어져 있고, 순서대로 행, 열의 번호, 이동 방향이다.
-// 행과 열의 번호는 1부터 시작하고, 이동 방향은 4보다 작거나 같은 자연수이고 1부터 순서대로 →, ←, ↑, ↓의 의미를 갖는다.
-// 같은 칸에 말이 두 개 이상 있는 경우는 입력으로 주어지지 않는다.
+// 이동하려는 칸이 파란색일 경우에는, 방향을 반대로 전환한 뒤 이동합니다. 
+// 만일 반대 방향으로 전환한 뒤 이동하려는 칸도 파란색이라면, 방향만 반대로 전환한 뒤 '이동하지 않고 가만히 있습니다.' 
+// 이동하려는 말에 다른 말들이 쌓여있을 경우에, '이동하려는 말만' 방향을 반대로 바꿔야 함에 유의합니다.
 
-// 게임이 종료되는 턴의 번호를 출력한다. 그 값이 1,000보다 크거나 절대로 게임이 종료되지 않는 경우에는 -1을 출력한다.
+// 격자판의 범위를 벗어나는 이동일 경우에도, 파란색으로 이동하려는 것과 똑같이 처리해줍니다.
+
+// 쌓여있는 말을 이동하는 경우에는, '본인 위에' 있는 말과 함께 이동해줍니다. 
+
+// 게임이 진행되는 동안 '아직 한 턴이 다 끝나지 않은 경우더라도' 말이 4개 이상 겹쳐지는 경우가 생긴다면 그 즉시 게임을 종료합니다. 
+
+// 초기 상태에 4개 이상 겹쳐진 입력은 주어지지 않습니다. <-- 시작하자마자 끝나는 경우는 없다.
+
+// 격자판의 상태와 말의 위치, 이동 방향이 주어질 때 게임이 종료되는 순간의 턴의 번호를 구하는 프로그램을 설계하세요.
 
 
-// ** 방향 번호 순서가 어떻게 되는지를 잘 숙지할 것!(상황에 따라 방향을 바꿔줘야 할 때, (dir + 2) % 4 같은 공식이 안맞을 수 있다.
-//    이 문제의 경우, 방향 순서가 →, ←, ↑, ↓이므로, 일반적인 방향 전환 공식으로는 안된다.
-// ** 이동 방향은 4보다 작거나 같은 자연수이고 1부터 순서대로 →, ←, ↑, ↓의 의미를 갖는다.(4 -> 3으로 변경)
-// ** 요구사항들 잘못 이해함....;;;;;; <-- 문제 좀 제대로 보자. 예시 시뮬레이션 보고 헷갈리지 말자.
+// input d는 1: 오른쪽, 2: 왼쪽, 3: 윗쪽, 4: 아랫쪽
+
+// 게임이 종료되는 턴의 번호를 출력합니다. 답이 1000보다 크거나 불가능한 경우에는 -1을 출력합니다.
+
+
+//첫번째 줄에는 윷놀이 판의 크기 n, 말의 개수 k가 공백을 두고 주어집니다.
+//
+//두번째 줄부터(n + 1)번째 줄까지 윷놀이 판의 정보가 주어집니다. 0은 흰색 판, 1은 빨간색 판, 2는 파란색 판을 의미합니다.
+//
+//(n + 2)번째 줄부터 k개의 줄에는 말의 정보가 1번 말부터 차례대로 주어집니다.말의 정보는 위치 x, y와 방향 d로 주어지며, x는 몇 번째 행인지를 y는 몇 번째 열인지를 의미합니다.d는 1일 경우 오른쪽, 2일 경우 왼쪽, 3일 경우 윗쪽, 4일 경우 아랫쪽을 의미합니다.
+//
+//4 ≤ n ≤ 12
+//
+//4 ≤ k ≤ 10
+//
+//같은 칸에 두 개의 말이 입력으로 주어지는 경우는 없다고 가정해도 좋습니다.
+
+
+// ** map들을 필요에 의해 별도로 관리하더라도, 초기 세팅은 잊지 않고 잘 해놔야 한다...!!(자칫 빈 칸으로 시작할 수 있다..!)
 
 #include <iostream>
 #include <vector>
-#include <stack>
 #include <deque>
 
 using namespace std;
 
-int dr[] = { 1000, 0, 0, -1, 1 };
-int dc[] = { 1000, 1, -1, 0, 0 };
-
-struct SpotInfo
+struct Info
 {
-	int n;
-	int dir;
+    int r, c, d;
 };
 
-struct NInfo
-{
-	int r;
-	int c;
-	int dir;
-};
+//d는 1: 오른쪽, 2 : 왼쪽, 3 : 윗쪽, 4 : 아랫쪽
+int dr[] = { 100, 0, 0, -1, 1 };
+int dc[] = { 100, 1, -1, 0, 0 };
 
-int N, K;
-vector<vector< int>> colorMap(13, vector< int>(13, 0));
-deque<deque< deque< SpotInfo>>> nMap(13, deque< deque< SpotInfo>>(13));
-vector< NInfo> nList(11);
-stack< SpotInfo> st;
-bool endGame = false;
+int n, k;
+vector<vector<deque<int>>> pMap(13, vector<deque<int>>(13, deque<int>()));
+vector<vector<int>> colorMap(13, vector<int>(13, 0));
+vector<Info> piece(10);
+bool isEnd = false;
 
-int changeDir(int dir) {
-	if (dir == 1) dir = 2;
-	else if (dir == 2) dir = 1;
-	else if (dir == 3) dir = 4;
-	else if (dir == 4) dir = 3;
-
-	return dir;
+bool isInBound(int r, int c) {
+    return 0 < r && r <= n && 0 < c && c <= n;
 }
 
-bool isOutOfBound(int r, int c) {
-	return r < 1 || N < r || c < 1 || N < c;
+int changeDir(int d) {
+    if (d == 1) return 2;
+    if (d == 2) return 1;
+    if (d == 3) return 4;
+    if (d == 4) return 3;
 }
 
-// 이게 틀렸다. 이동하는 칸의 size만큼 꼭 다 이동하는 게 아니란 걸 간과했다... 역시 문제 풀 때 정신 잘 차리고 풀어야 함...;;;;
-bool check(int r, int c) {
-	//if (4 <= nMap[r][c].size() + nMap[nr][nc].size()) return true;
-	if (4 <= nMap[r][c].size()) return true;
-	return false;
+void whiteMove(int idx, int r, int c, int nr, int nc) {
+    for (int i = pMap[r][c].size()-1; 0 <= i; i--)
+    {
+        if (pMap[r][c][i] == idx)
+        {
+            for (int j = i; 0 <= j; j--)
+            {
+                int v = pMap[r][c][j];
+                pMap[nr][nc].push_front(v);
+                piece[v].r = nr;
+                piece[v].c = nc;
+            }
+
+            for (int j = 0; j <= i; j++)
+            {
+                pMap[r][c].pop_front();
+            }
+
+            if (4 <= pMap[nr][nc].size()) isEnd = true;
+            return;
+        }
+    }
 }
 
-void redMove(int r, int c, int nr, int nc, int curr) {
+void redMove(int idx, int r, int c, int nr, int nc) {
+    // 문제를 잘못 이해함;;
+    //deque<int> temp;
+    //for (int i = 0; i < pMap[r][c].size(); i++)
+    //{
+    //    temp.push_front(pMap[r][c][i]);
+    //}
+    //pMap[r][c] = temp;
 
-	for (int i = nMap[r][c].size() - 1; 0 <= i; i--)
-	{
-		if (nMap[r][c][i].n == curr)
-		{
-			st.push({ curr, nList[curr].dir });
-			nList[curr].r = nr;
-			nList[curr].c = nc;
+    for (int i = pMap[r][c].size() - 1; 0 <= i; i--)
+    {
+        if (pMap[r][c][i] == idx)
+        {
+            for (int j = 0; j <= i; j++)
+            {
+                int v = pMap[r][c][0];
+                pMap[nr][nc].push_front(v);
+                piece[v].r = nr;
+                piece[v].c = nc;
 
-			for (int j = i - 1; 0 <= j; j--)
-			{
-				int n = nMap[r][c][j].n;
-				st.push({ n, nList[n].dir });
-				nList[n].r = nr;
-				nList[n].c = nc;
-			}
+                pMap[r][c].pop_front();
+            }
 
-			nMap[r][c].erase(nMap[r][c].begin(), nMap[r][c].begin() + i + 1);
-
-			break;
-		}
-	}
-
-	while (!st.empty()) {
-		int n = st.top().n;
-		int dir = st.top().dir;
-		st.pop();
-
-		nMap[nr][nc].push_front({ n, dir });
-	}
-}
-
-void whiteMove(int r, int c, int nr, int nc, int curr) {
-	 
-	for (int i = nMap[r][c].size() - 1; 0 <= i; i--)
-	{
-		if (nMap[r][c][i].n == curr)
-		{
-			nMap[nr][nc].push_front({ curr, nList[curr].dir });
-			nList[curr].r = nr;
-			nList[curr].c = nc;
-
-			for (int j = i - 1; 0 <= j; j--)
-			{
-				int n = nMap[r][c][j].n;
-				nMap[nr][nc].push_front({ n, nList[n].dir });
-				nList[n].r = nr;
-				nList[n].c = nc;
-			}
-
-			nMap[r][c].erase(nMap[r][c].begin(), nMap[r][c].begin() + i + 1);
-
-			break;
-		}
-	}
-}
-
-void blueMove(int r, int c, int curr) {
-
-	int newDir = changeDir(nList[curr].dir);
-
-	for (int i = nMap[r][c].size() - 1; 0 <= i; i--)
-	{
-		if (nMap[r][c][i].n == curr) {
-
-			nMap[r][c][i].dir = newDir;
-			nList[curr].dir = newDir;
-			break;
-		}
-	}
+            if (4 <= pMap[nr][nc].size()) isEnd = true;
+            return;
+        }
+    }
 }
 
 int main() {
-	cin >> N >> K;
-	for (int r = 1; r <= N; r++)
-	{
-		for (int c = 1; c <= N; c++)
-		{
-			cin >> colorMap[r][c];
-		}
-	}
+    isEnd = false;
+    cin >> n >> k;
+    for (int r = 1; r <= n; r++)
+    {
+        for (int c = 1; c <= n; c++)
+        {
+            cin >> colorMap[r][c];
+        }
+    }
+    for (int i = 0; i < k; i++)
+    {
+        cin >> piece[i].r >> piece[i].c >> piece[i].d;
+        pMap[piece[i].r][piece[i].c].push_back(i);
+    }
 
-	for (int i = 1; i <= K; i++)
-	{
-		int r, c, dir;
-		cin >> r >> c >> dir;
-		nList[i].r = r;
-		nList[i].c = c;
-		nList[i].dir = dir;
+    //cout << endl;
+    //for (int r = 1; r <= n; r++)
+    //{
+    //    for (int c = 1; c <= n; c++)
+    //    {
+    //        cout << pMap[r][c].size() << " ";
+    //    }
+    //    cout << endl;
+    //}
+    //cout << endl;
 
-		nMap[r][c].push_back({ i, dir });
-	}
+    int turnCnt = 1;
+    while (true)
+    {
+        if (1000 < turnCnt) {
+            turnCnt = -1;
+            break;
+        }
 
-	int cnt = 1;
-	while (true) {
+        for (int i = 0; i < k; i++)
+        {
+            int r = piece[i].r;
+            int c = piece[i].c;
+            int d = piece[i].d;
 
-		for (int i = 1; i <= K; i++)
-		{
-			int r = nList[i].r;
-			int c = nList[i].c;
+            int nr = r + dr[d];
+            int nc = c + dc[d];
 
-			int nr = r + dr[nList[i].dir];
-			int nc = c + dc[nList[i].dir];
+            // 맵 바깥으로 이동하거나, 파란색일 경우 방향과 다음r,c값 재변경
+            if (!isInBound(nr, nc) || colorMap[nr][nc] == 2)
+            {
+                d = changeDir(d);
+                piece[i].d = d;
+                nr = r + dr[d];
+                nc = c + dc[d];
+            }
 
-			if (isOutOfBound(nr, nc) || colorMap[nr][nc] == 2)
-			{
-				blueMove(r, c, i);
+            if (colorMap[nr][nc] == 0)
+            {
+                whiteMove(i, r, c, nr, nc);
+                if (isEnd) break;
+            }
+            else if (colorMap[nr][nc] == 1)
+            {
+                redMove(i, r, c, nr, nc);
+                if (isEnd) break;
+            }
+            // 문제를 잘못 이해함;;
+            //else
+            //{
+            //    d = changeDir(d);
+            //    piece[i].d = d;
+            //}
+        }
+        if (isEnd) break;
 
-				nr = r + dr[nList[i].dir];
-				nc = c + dc[nList[i].dir];
+        turnCnt += 1;
+    }
 
-				if (isOutOfBound(nr, nc) || colorMap[nr][nc] == 2) continue;
-			}
-			
-			if (colorMap[nr][nc] == 1)
-			{
-				redMove(r, c, nr, nc, i);
-				if (check(nr, nc)) {
-					endGame = true;
-					break;
-				}
-			}
-			else
-			{
-				whiteMove(r, c, nr, nc, i);
-				if (check(nr, nc)) {
-					endGame = true;
-					break;
-				}
-			}
-		}
-
-		if (endGame) break;
-		cnt += 1;
-		if (1000 < cnt) break;
-	}
-	if (1000 < cnt) cnt = -1;
-
-	cout << cnt << '\n';
-	return 0;
+    cout << turnCnt << '\n';
+    return 0;
 }
