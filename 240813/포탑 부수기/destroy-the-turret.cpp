@@ -1,4 +1,4 @@
-// 11:37 ~ 1:45, 4:50 ~ 
+// 11:37 ~ 1:45, 4:50 ~ 6:10, 10:15 ~ 
 // 
 // // N×M 격자가 있고, 모든 위치에는 포탑이 존재합니다. (즉, 포탑의 개수는 N*M개)
 // 
@@ -36,7 +36,7 @@
 // 공격을 할 때에는 '레이저 공격'을 먼저 시도하고, 만약 그게 안 된다면 '포탄 공격'을 합니다. 각 공격의 규칙은 다음과 같습니다.
 
 // 1) 레이져 공격
-// - BFS로 최단거리로 이동 <-- 부서진 포탑은 지날 수 없기에, 혹시 가능한 경로가 없다면 포탄 공격ㅇㅇ
+// - DFS로 최단거리로 이동 <-- 부서진 포탑은 지날 수 없기에, 혹시 가능한 경로가 없다면 포탄 공격ㅇㅇ
 //	 => 이 때, 범위 벗어나면 반대쪽으로 이어짐ㅇㅇ
 //		=> 이동이 가능하다면, 공격 대상은 공격력만큼, 경로 내의 포탑들은 공격력/2 만큼 감소ㅇㅇ
 //		=> 이동 가능한 경로가 여러개라면, 우/하/좌/상의 우선순위대로 먼저 움직인 경로가 선택됨. <-- 따라서, 방향 우선순위대로 돌려서 먼저 나오는 경로로 하면 됨.
@@ -88,12 +88,11 @@ vector<vector<int>> visited(11, vector<int>(11, 0));
 vector<Info> tList;
 int minD;
 int a, t;
+bool isWayExist;
 //두 번째 줄부터 N개의 줄에 걸쳐서 N×M 격자에 대한 정보가 주어집니다.단, 최초에 부서지지 않은 포탑은 최소 2개 이상 존재합니다.
 
-bool laserWayDFS(int r, int c, int depth) {
-    if (minD <= depth) return false;
-
-    bool isExist = false;
+void laserWayDFS(int r, int c, int depth) {
+    if (minD <= depth) return;
 
     for (int d = 0; d < 4; d++)
     {
@@ -109,18 +108,19 @@ bool laserWayDFS(int r, int c, int depth) {
         {
             minD = depth + 1;
             wayMap = visited;
-            return true;
+            isWayExist = true;
+            return;
         }
         
         if (0 < map[nr][nc] && visited[nr][nc] != 1)
         {
             visited[nr][nc] = 1;
-            if (laserWayDFS(nr, nc, depth + 1)) isExist = true;
+            laserWayDFS(nr, nc, depth + 1);
             visited[nr][nc] = 0;
         }
     }
 
-    return isExist;
+    return;
 }
 
 void bomb() {
@@ -172,9 +172,10 @@ int main() {
     for (int k = 1; k <= K; k++)
     {
         minD = 10000;
+        isWayExist = false;
 
         // 공격자 선정
-        int a = 0;
+        a = 0;
         for (int i = 1; i < tList.size(); i++)
         {
             if (tList[a].p > tList[i].p) a = i;
@@ -193,7 +194,7 @@ int main() {
         }
 
         // 타겟 선정
-        int t = 0;
+        t = 0;
         for (int i = 1; i < tList.size(); i++)
         {
             if (tList[t].p < tList[i].p) t = i;
@@ -213,9 +214,22 @@ int main() {
 
         tList[a].t = k;
         tList[a].p += (N + M);
+        map[tList[a].r][tList[a].c] = tList[a].p;
+
+        //cout << endl;
+        //for (int r = 1; r <= N; r++)
+        //{
+        //    for (int c = 1; c <= M; c++)
+        //    {
+        //        cout << map[r][c] << " ";
+        //    }
+        //    cout << endl;
+        //}
 
         visited[tList[a].r][tList[a].c] = 1;
-        if (laserWayDFS(tList[a].r, tList[a].c, 0))
+        laserWayDFS(tList[a].r, tList[a].c, 0);
+
+        if (isWayExist)
         {
             tList[t].p -= tList[a].p;
             map[tList[t].r][tList[t].c] = tList[t].p;
@@ -238,6 +252,16 @@ int main() {
             bomb();
         }
 
+        //cout << endl;
+        //for (int r = 1; r <= N; r++)
+        //{
+        //    for (int c = 1; c <= M; c++)
+        //    {
+        //        cout << map[r][c] << " ";
+        //    }
+        //    cout << endl;
+        //}
+
         int tR = tList[t].r;
         int tC = tList[t].c;
 
@@ -258,6 +282,16 @@ int main() {
                 map[r][c] = tList[i].p;
             }
         }
+
+        //cout << endl;
+        //for (int r = 1; r <= N; r++)
+        //{
+        //    for (int c = 1; c <= M; c++)
+        //    {
+        //        cout << map[r][c] << " ";
+        //    }
+        //    cout << endl;
+        //}
     }
     
     int maxP = tList[0].p;
