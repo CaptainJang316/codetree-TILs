@@ -68,20 +68,22 @@ priority_queue<W1, vector<W1>, cmp> pq;
 
 void setDist(int s) {
     bool isExist = false;
-    for (int i = 0; i < node[s].size(); i++)
-    {
-        if (node[s][i].t == s)
-        {
-            dist[s] = node[s][i].c;
-            pq.push({ node[s][i].c, s });
-            isExist = true;
-            break;
-        }
-    }
-    if (!isExist) {
-        dist[s] = 0;
-        pq.push({ 0, s });
-    }
+    //for (int i = 0; i < node[s].size(); i++)
+    //{
+    //    if (node[s][i].t == s)
+    //    {
+    //        dist[s] = node[s][i].c;
+    //        pq.push({ node[s][i].c, s });
+    //        isExist = true;
+    //        break;
+    //    }
+    //}
+    //if (!isExist) {
+    //    dist[s] = 0;
+    //    pq.push({ 0, s });
+    //}
+    dist[s] = 0;
+    pq.push({ 0, s });
 
     while (!pq.empty())
     {
@@ -131,6 +133,7 @@ int main() {
             idList.push_back(id);
             p[id].r = r;
             p[id].dest = d;
+            p[id].isDeleted = false;
 
             break;
 
