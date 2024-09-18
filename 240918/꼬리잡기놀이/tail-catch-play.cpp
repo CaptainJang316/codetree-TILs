@@ -1,29 +1,10 @@
-// 3:31 ~ 4:21, 5:05 ~ 
+// 3:31 ~ 4:21, 5:05 ~ 6:07, 7:54 ~ 10:11 <-- 4시간 꽉 채움(혹은 5분 정도 넘어감);;;
 
-// n * n 격자에서 꼬리잡기놀이를 진행. 꼬리잡기놀이는 다음과 같이 진행됩니다.
+// ** 호흡도 엄청 길고, 로직도 복잡해서 실수가 굉장히 많았고, 코드가 복잡하니 에러를 찾기도 힘들었다 ...;;;
+//    => 최대한 코드를 처음부터 간결하게 짜는 거 신경써야 할 듯. 원큐에 문제가 풀릴 가능성은 극히 낮으므로, 그 때부터 디버깅 해야 하는데
+//       코드가 간결하지 않으면 에러 찾고, 고치는 데 굉장히 오래 걸린다....
 
-// 3명 이상이 한 팀이 됩니다. 
-// 모든 사람들은 자신의 '앞 사람의 허리'를 잡고 움직이게 되며, 맨 앞에 있는 사람을 머리사람, 맨 뒤에 있는 사람을 꼬리사람이라고 합니다. 
-// 각 팀은 게임에서 주어진 이동 선을 따라서'만' 이동합니다. 
-// 각 팀의 이동 선은 끝이 '이어져있습니다'. 
-// 
-// 각 팀의 이동 선은 '서로 겹치지 않습니다'.
-
-// 게임은 라운드 별로 진행이 되며, 한 라운드는 다음과 같이 진행됩니다.
-
-// 1. 먼저 각 팀은 '머리사람을 따라서' 한 칸 이동합니다.
-
-// 2. 각 라운드마다 공이 정해진 선을 따라 던져집니다. 
-
-// 3. 공이 던져지는 경우에 해당 선에 사람이 '있으면' 최초에 만나게 되는 사람'만'이 공을 얻게 되어 점수를 얻게 됩니다. 
-// 점수는 해당 사람이 머리사람을 시작으로 팀 내에서 k번째 사람이라면 'k의 제곱만큼' 점수를 얻게 됩니다. 
-// 아무도 공을 받지 못하는 경우에는 아무 점수도 획득하지 '못합니다'. 
-
-// 공을 획득한 팀의 경우에는 머리사람과 꼬리사람이 바뀝니다. 즉 '방향을 바꾸게 됩니다'.
-
-
-// 총 격자의 크기, 각 팀의 위치, 각 팀의 이동 선, 총 진행하는 라운드의 수가 주어질 때 '각 팀이 획득한 점수의 총합'을 구하는 프로그램을 구하세요.
-
+// ** 걍 나중에 또 다시 풀어볼 것...!
 
 #include <iostream>
 #include <vector>
@@ -56,8 +37,16 @@ bool isInBound(int r, int c) {
     return 0 <= r && r < n && 0 <= c && c < n;
 }
 
+struct cmp
+{
+    bool operator()(Spot& a, Spot& b) {
+        return map[a.r][a.c] > map[b.r][b.c];
+    }
+};
+
 void getTeam(int sr, int sc, int idx, vector<vector<int>> &visited) {
     queue<Spot> q;
+    priority_queue<Spot, vector<Spot>, cmp> pq;
     team[idx].push_back({ sr,sc });
     q.push({ sr,sc });
     visited[sr][sc] = idx;
@@ -76,6 +65,22 @@ void getTeam(int sr, int sc, int idx, vector<vector<int>> &visited) {
             if (isInBound(nr, nc) && map[nr][nc] > 0 && map[nr][nc] < 4 && visited[nr][nc] != idx)
             {
                 visited[nr][nc] = idx;
+                pq.push({ nr,nc });
+            }
+        }
+
+        bool isSelected = false;
+        while (!pq.empty())
+        {
+            int nr = pq.top().r;
+            int nc = pq.top().c;
+            pq.pop();
+
+            if (isSelected) {
+                visited[nr][nc] = 0;
+            }
+            else {
+                isSelected = true;
                 q.push({ nr,nc });
                 team[idx].push_back({ nr,nc });
             }
@@ -84,7 +89,7 @@ void getTeam(int sr, int sc, int idx, vector<vector<int>> &visited) {
 }
 
 void moveTeam(int idx) {
-    //cout << "team[idx].size(): " << team[idx].size() << endl;
+    int temp = 0;
     if (dir[idx] == 0)
     {
         for (int i = 0; i < team[idx].size(); i++)
@@ -99,8 +104,10 @@ void moveTeam(int idx) {
                     int nr = r + dr[d];
                     int nc = c + dc[d];
 
-                    if (isInBound(nr, nc) && map[nr][nc] == 4)
+                    if (isInBound(nr, nc) && (map[nr][nc] == 4 || (map[nr][nc] == 3 && team[idx].size() > 2)))
                     {
+                        if(map[nr][nc] == 3) temp = 3;
+
                         team[idx][i].r = nr;
                         team[idx][i].c = nc;
                         map[nr][nc] = map[r][c];
@@ -126,9 +133,11 @@ void moveTeam(int idx) {
 
                         if (i == team[idx].size() - 1)
                         {
-                            map[r][c] = 4;
-                            orderMap[r][c].n = 0;
-                            orderMap[r][c].t = 0;
+                            if (temp == 0) {
+                                map[r][c] = 4;
+                                orderMap[r][c].n = 0;
+                                orderMap[r][c].t = 0;
+                            } else map[nr][nc] = temp;
                         }
                         else map[r][c] = -1;
                         
@@ -152,8 +161,10 @@ void moveTeam(int idx) {
                     int nr = r + dr[d];
                     int nc = c + dc[d];
 
-                    if (isInBound(nr, nc) && map[nr][nc] == 4)
+                    if (isInBound(nr, nc) && (map[nr][nc] == 4 || (map[nr][nc] == 1 && team[idx].size() > 2)))
                     {
+                        if (map[nr][nc] == 1) temp = 1;
+
                         team[idx][i].r = nr;
                         team[idx][i].c = nc;
                         map[nr][nc] = map[r][c];
@@ -179,9 +190,12 @@ void moveTeam(int idx) {
 
                         if (i == 0)
                         {
-                            map[r][c] = 4;
-                            orderMap[r][c].n = 0;
-                            orderMap[r][c].t = 0;
+                            if (temp == 0) {
+                                map[r][c] = 4;
+                                orderMap[r][c].n = 0;
+                                orderMap[r][c].t = 0;
+                            }
+                            else map[nr][nc] = temp;
                         }
                         else map[r][c] = -1;
                         
@@ -203,9 +217,19 @@ void shoutBall(char w, int idx, int d) {
             {
                 if (map[idx][c] > 0 && map[idx][c] < 4)
                 {
-                    //cout << "orderMap[idx][c].n: " << orderMap[idx][c].n << endl;
-                    score += (orderMap[idx][c].n * orderMap[idx][c].n);
-                    dir[orderMap[idx][c].t] = dir[orderMap[idx][c].t] == 0 ? 1 : 0;
+                    int teamNum = orderMap[idx][c].t;
+                    if (dir[teamNum] == 0)
+                    {
+                        int n = orderMap[idx][c].n;
+                        score += n * n;
+                        dir[teamNum] = 1;
+                    } 
+                    else
+                    {
+                        int n = team[teamNum].size() - orderMap[idx][c].n + 1;
+                        score += n * n;
+                        dir[teamNum] = 0;
+                    }
                     return;
                 }
             }
@@ -216,8 +240,19 @@ void shoutBall(char w, int idx, int d) {
             {
                 if (map[idx][c] > 0 && map[idx][c] < 4)
                 {
-                    score += (orderMap[idx][c].n * orderMap[idx][c].n);
-                    dir[orderMap[idx][c].t] = dir[orderMap[idx][c].t] == 0 ? 1 : 0;
+                    int teamNum = orderMap[idx][c].t;
+                    if (dir[teamNum] == 0)
+                    {
+                        int n = orderMap[idx][c].n;
+                        score += n * n;
+                        dir[teamNum] = 1;
+                    }
+                    else
+                    {
+                        int n = team[teamNum].size() - orderMap[idx][c].n + 1;
+                        score += n * n;
+                        dir[teamNum] = 0;
+                    }
                     return;
                 }
             }
@@ -227,24 +262,46 @@ void shoutBall(char w, int idx, int d) {
     {
         if (d == 0)
         {
-            for (int r = 0; r < n; r++)
+            for (int r = n - 1; r >= 0; r--)
             {
                 if (map[r][idx] > 0 && map[r][idx] < 4)
                 {
-                    score += (orderMap[r][idx].n * orderMap[r][idx].n);
-                    dir[orderMap[r][idx].t] = dir[orderMap[r][idx].t] == 0 ? 1 : 0;
+                    int teamNum = orderMap[r][idx].t;
+                    if (dir[teamNum] == 0)
+                    {
+                        int n = orderMap[r][idx].n;
+                        score += n * n;
+                        dir[teamNum] = 1;
+                    }
+                    else
+                    {
+                        int n = team[teamNum].size() - orderMap[r][idx].n + 1;
+                        score += n * n;
+                        dir[teamNum] = 0;
+                    }
                     return;
                 }
             }
         }
         else
         {
-            for (int r = n - 1; r >= 0; r--)
+            for (int r = 0; r < n; r++)
             {
                 if (map[r][idx] > 0 && map[r][idx] < 4)
                 {
-                    score += (orderMap[r][idx].n * orderMap[r][idx].n);
-                    dir[orderMap[r][idx].t] = dir[orderMap[r][idx].t] == 0 ? 1 : 0;
+                    int teamNum = orderMap[r][idx].t;
+                    if (dir[teamNum] == 0)
+                    {
+                        int n = orderMap[r][idx].n;
+                        score += n * n;
+                        dir[teamNum] = 1;
+                    }
+                    else
+                    {
+                        int n = team[teamNum].size() - orderMap[r][idx].n + 1;
+                        score += n * n;
+                        dir[teamNum] = 0;
+                    }
                     return;
                 }
             }
@@ -264,7 +321,6 @@ int main() {
         for (int c = 0; c < n; c++)
         {
             cin >> map[r][c];
-            
             //if (map[r][c] == 1) <-- 이걸 여기서 하면 안됐다..!(아직 못받은 인풋이 당연히 남았다..;;) 
             //{
             //    getTeam(r, c, teamNum, visited);
@@ -284,15 +340,6 @@ int main() {
             }
         }
     }
-    //cout << '\n';
-    //for (int r = 0; r < n; r++)
-    //{
-    //    for (int c = 0; c < n; c++)
-    //    {
-    //        cout << visited[r][c] << ' ';
-    //    }
-    //    cout << '\n';
-    //}
 
     int v;
     for (int curr = 0; curr < k; curr++)
@@ -302,18 +349,8 @@ int main() {
             moveTeam(i);
         }
 
-        //cout << '\n';
-        //for (int r = 0; r < n; r++)
-        //{
-        //    for (int c = 0; c < n; c++)
-        //    {
-        //        cout << map[r][c] << ' ';
-        //    }
-        //    cout << '\n';
-        //}
-
-        v = curr / n;
-        if (v == 0) shoutBall('r', curr, 0);
+        v = (curr / n) % 4;
+        if (v == 0) shoutBall('r', curr % n, 0);
         else if (v == 1) shoutBall('c', curr % n, 0);
         else if (v == 2) shoutBall('r', n - 1 - (curr % n), 1);
         else if (v == 3) shoutBall('c', n - 1 - (curr % n), 1);
