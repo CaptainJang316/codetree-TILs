@@ -25,6 +25,10 @@
 
 // 여행 상품의 출발지를 전부 s로 변경하는 명령입니다. 출발지가 변경됨에 따라 각 상품의 cost가 변경될 수 있음에 유의하세요.
 
+
+// ** 출발지가 계속 바뀔 수 있는 경우, 그 때마다 새로 계산하는 건 굉장히 시간 소모가 커질 수 있다.
+//    => 이미 구한 적 있는 방향의 경우엔 그대로 사용할 수 있도록 해당 출발지 기준으로의 거리들 저장..!!!(2차원 dist!!)
+
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -54,7 +58,8 @@ struct Package
 };
 
 int Q;
-vector<int> dist(2000, INF); // 0 ~ n-1
+//vector<int> dist(2000, INF); // 0 ~ n-1
+vector<vector<int>> dist(2000, vector<int>(2000, INF)); // 0 ~ n-1
 vector<vector<W2>> node(10001);
 vector<int> idList;
 vector< Package> p(30001);
@@ -85,7 +90,10 @@ void setDist(int s) {
     //    dist[s] = 0;
     //    pq.push({ 0, s });
     //}
-    dist[s] = 0;
+
+    if (dist[s][s] == 0) return;
+
+    dist[s][s] = 0;
     pq.push({ 0, s });
 
     while (!pq.empty())
@@ -94,16 +102,16 @@ void setDist(int s) {
         int c = pq.top().c;
         pq.pop();
 
-        if (dist[f] < c) continue;
+        if (dist[s][f] < c) continue;
 
         for (int i = 0; i < node[f].size(); i++)
         {
             int to = node[f][i].t;
             int nc = c + node[f][i].c;
 
-            if (dist[to] > nc)
+            if (dist[s][to] > nc)
             {
-                dist[to] = nc;
+                dist[s][to] = nc;
                 pq.push({ nc, to });
             }
         }
@@ -156,7 +164,7 @@ int main() {
                 r = p[id].r;
                 d = p[id].dest;
 
-                v = r - dist[d];
+                v = r - dist[s][d];
 
                 if (maxV <= v)
                 {
@@ -183,8 +191,6 @@ int main() {
 
         case 500:
             cin >> s;
-
-            fill(dist.begin(), dist.end(), INF);
             setDist(s);
 
             break;
