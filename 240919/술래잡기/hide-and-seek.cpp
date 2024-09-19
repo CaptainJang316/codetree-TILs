@@ -284,7 +284,7 @@ int main() {
         //    cout << endl;
         //}
 
-        tMap[tg.r][tg.c] = 0;
+        //tMap[tg.r][tg.c] = 0;
         taggerMove();
 
         //cout << "===== tMap =====" << endl;
