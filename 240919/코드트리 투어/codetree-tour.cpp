@@ -1,4 +1,4 @@
-// 12:40 ~ 
+// 12:40 ~ 2:43, 11:30 ~ 
 
 // 고객의 만족을 위해 여행사는 다양한 여행 상품을 관리하여 최적의 여행 경험을 제공하려고 합니다.
 
@@ -29,6 +29,8 @@
 // ** 출발지가 계속 바뀔 수 있는 경우, 그 때마다 새로 계산하는 건 굉장히 시간 소모가 커질 수 있다.
 //    => 이미 구한 적 있는 방향의 경우엔 그대로 사용할 수 있도록 해당 출발지 기준으로의 거리들 저장..!!!(2차원 dist!!)
 
+// ** 우선순위 큐 업데이트하는 게 오히려 낫다! 반복 횟수 자체가 비교 불가 수준으로 차이난다.
+
 #include <iostream>
 #include <vector>
 #include <queue>
@@ -57,6 +59,11 @@ struct Package
     bool isDeleted = false;
 };
 
+struct PackageInfo
+{
+    int id, r, dest;
+};
+
 int Q;
 //vector<int> dist(2000, INF); // 0 ~ n-1
 vector<vector<int>> dist(2000, vector<int>(2000, INF)); // 0 ~ n-1
@@ -73,6 +80,15 @@ struct cmp
 };
 
 priority_queue<W1, vector<W1>, cmp> pq;
+
+struct cmp2
+{
+    bool operator()(PackageInfo& a, PackageInfo& b) {
+        return (a.r - dist[s][a.dest]) < (b.r - dist[s][b.dest]);
+    }
+};
+
+vector<priority_queue<PackageInfo, vector<PackageInfo>, cmp2>> p_pq(2000);
 
 void setDist(int s) {
     //bool isExist = false;
@@ -116,6 +132,14 @@ void setDist(int s) {
             }
         }
     }
+
+    for (int i = 0; i < idList.size(); i++)
+    {
+        int id = idList[i];
+        if (p[id].isDeleted) continue;
+
+        p_pq[s].push({ id, p[id].r, p[id].dest });
+    }
 }
 
 int main() {
@@ -143,7 +167,9 @@ int main() {
             cin >> id;
             cin >> p[id].r >> p[id].dest;
             idList.push_back(id);
+
             p[id].isDeleted = false;
+            p_pq[s].push({id, p[id].r, p[id].dest});
 
             break;
 
@@ -155,37 +181,29 @@ int main() {
 
         case 400:
             maxV = -1;
-            int id, v, best_id;
-            for (int i = 0; i < idList.size(); i++)
+            while (!p_pq[s].empty())
             {
-                if (p[idList[i]].isDeleted) continue;
+                int id = p_pq[s].top().id;
+                int r = p_pq[s].top().r;
+                int d = p_pq[s].top().dest;
+                p_pq[s].pop();
 
-                id = idList[i];
-                r = p[id].r;
-                d = p[id].dest;
+                if (p[id].isDeleted || p[id].r != r || p[id].dest != d) continue;
 
-                v = r - dist[s][d];
+                maxV = r - dist[s][d];
 
-                if (maxV <= v)
+                if (maxV >= 0)
                 {
-                    if (maxV == v)
-                    {
-                        best_id = min(best_id, id);
-                    }
-                    else
-                    {
-                        maxV = v;
-                        best_id = id;
-                    }
+                    cout << id << '\n';
+                    p[id].isDeleted = true;
                 }
-            }
+                else {
+                    maxV = -1;
+                    cout << maxV << '\n';
+                }
 
-            if (maxV != -1)
-            {
-                cout << best_id << '\n';
-                p[best_id].isDeleted = true;
-            }
-            else cout << maxV << '\n';
+                break;
+            }            
 
             break;
 
