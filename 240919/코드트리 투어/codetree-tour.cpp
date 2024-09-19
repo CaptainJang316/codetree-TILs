@@ -91,7 +91,7 @@ struct cmp2
     }
 };
 
-vector<priority_queue<PackageInfo, vector<PackageInfo>, cmp2>> p_pq(2000);
+priority_queue<PackageInfo, vector<PackageInfo>, cmp2> p_pq;
 
 void setDist(int s) {
     //bool isExist = false;
@@ -136,12 +136,17 @@ void setDist(int s) {
         }
     }
 
+    while (!p_pq.empty())
+    {
+        p_pq.pop();
+    }
+
     for (int i = 0; i < idList.size(); i++)
     {
         int id = idList[i];
         if (p[id].isDeleted) continue;
 
-        p_pq[s].push({ id, p[id].r, p[id].dest });
+        p_pq.push({ id, p[id].r, p[id].dest });
     }
 }
 
@@ -172,7 +177,7 @@ int main() {
             idList.push_back(id);
 
             p[id].isDeleted = false;
-            p_pq[s].push({id, p[id].r, p[id].dest});
+            p_pq.push({id, p[id].r, p[id].dest});
 
             break;
 
@@ -185,12 +190,12 @@ int main() {
         case 400: {
             maxV = -1;
             bool isExist = false;
-            while (!p_pq[s].empty())
+            while (!p_pq.empty())
             {
-                int id = p_pq[s].top().id;
-                int r = p_pq[s].top().r;
-                int d = p_pq[s].top().dest;
-                p_pq[s].pop();
+                int id = p_pq.top().id;
+                int r = p_pq.top().r;
+                int d = p_pq.top().dest;
+                p_pq.pop();
 
                 //cout << "id: " << id << ", r - dist[s][d]:" << r - dist[s][d] << '\n';
 
