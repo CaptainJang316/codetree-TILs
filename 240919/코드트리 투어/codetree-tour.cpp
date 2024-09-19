@@ -110,28 +110,29 @@ void setDist(int s) {
     //    pq.push({ 0, s });
     //}
 
-    if (dist[s][s] == 0) return;
-
-    dist[s][s] = 0;
-    pq.push({ 0, s });
-
-    while (!pq.empty())
+    if (dist[s][s] != 0) 
     {
-        int f = pq.top().f;
-        int c = pq.top().c;
-        pq.pop();
+        dist[s][s] = 0;
+        pq.push({ 0, s });
 
-        if (dist[s][f] < c) continue;
-
-        for (int i = 0; i < node[f].size(); i++)
+        while (!pq.empty())
         {
-            int to = node[f][i].t;
-            int nc = c + node[f][i].c;
+            int f = pq.top().f;
+            int c = pq.top().c;
+            pq.pop();
 
-            if (dist[s][to] > nc)
+            if (dist[s][f] < c) continue;
+
+            for (int i = 0; i < node[f].size(); i++)
             {
-                dist[s][to] = nc;
-                pq.push({ nc, to });
+                int to = node[f][i].t;
+                int nc = c + node[f][i].c;
+
+                if (dist[s][to] > nc)
+                {
+                    dist[s][to] = nc;
+                    pq.push({ nc, to });
+                }
             }
         }
     }
