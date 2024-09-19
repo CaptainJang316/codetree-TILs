@@ -334,8 +334,9 @@ int main() {
             //}
         }
 
-        cout << score << '\n';
+        cout << score << " ";
     }
+    cout << '\n';
 
     return 0;
 }
