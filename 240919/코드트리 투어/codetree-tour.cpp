@@ -84,7 +84,10 @@ priority_queue<W1, vector<W1>, cmp> pq;
 struct cmp2
 {
     bool operator()(PackageInfo& a, PackageInfo& b) {
-        return (a.r - dist[s][a.dest]) < (b.r - dist[s][b.dest]);
+        int av = a.r - dist[s][a.dest];
+        int bv = b.r - dist[s][b.dest];
+        if (av == bv) return a.id > b.id;
+        return av < bv;
     }
 };
 
@@ -179,8 +182,9 @@ int main() {
 
             break;
 
-        case 400:
+        case 400: {
             maxV = -1;
+            bool isExist = false;
             while (!p_pq[s].empty())
             {
                 int id = p_pq[s].top().id;
@@ -188,8 +192,11 @@ int main() {
                 int d = p_pq[s].top().dest;
                 p_pq[s].pop();
 
+                //cout << "id: " << id << ", r - dist[s][d]:" << r - dist[s][d] << '\n';
+
                 if (p[id].isDeleted || p[id].r != r || p[id].dest != d) continue;
 
+                isExist = true;
                 maxV = r - dist[s][d];
 
                 if (maxV >= 0)
@@ -203,10 +210,15 @@ int main() {
                 }
 
                 break;
-            }            
+            }
+            if (!isExist)
+            {
+                maxV = -1;
+                cout << maxV << '\n';
+            }
 
             break;
-
+        }
         case 500:
             cin >> s;
             setDist(s);
