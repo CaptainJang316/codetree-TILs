@@ -1,4 +1,8 @@
+// 4시간 이상. 그냥 엄청 오래 걸림... 다시 풀어볼 것!
+
 // ** long long vs int
+
+// ** 최적화 문제라는 걸 잊지 말자..! 우선순위 큐를 매번 통째로 새로 가는 방식이 맞을리가 없다.
 
 #include <iostream>
 #include <vector>
@@ -183,10 +187,6 @@ int main() {
             long long maxScore = 0;
             for (int i = 0; i < P; i++)
             {
-                //cout << "========\n";
-                //cout << "rb[pidList[i]].score: " << rb[pidList[i]].score << endl;
-                //cout << "diffScore[pidList[i]: " << diffScore[pidList[i]] << endl;
-                //cout << "totalScore: " << totalScore << endl;
                 rb[pidList[i]].score += (totalScore - diffScore[pidList[i]]);
             }
             for (int i = 0; i < P; i++)
