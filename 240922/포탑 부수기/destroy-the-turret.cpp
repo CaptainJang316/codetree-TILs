@@ -237,7 +237,7 @@ void bombAttack(int turnCnt) {
         if (isOutOfBound_R(nr)) nr = changeR(nr);
         if (isOutOfBound_C(nc)) nc = changeC(nc);
 
-        if (map[nr][nc] > 0) {
+        if (map[nr][nc] > 0 && (nr != ar || nc != ac)) {
             map[nr][nc] -= v;
             isAttacked[nr][nc] = turnCnt;
         }
