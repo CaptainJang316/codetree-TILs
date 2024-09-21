@@ -76,23 +76,11 @@
 #include <queue>
 #include <algorithm>
 
-//첫 번째 줄에 N, M, K가 공백을 사이에 두고 주어집니다.
-//
-//두 번째 줄부터 N개의 줄에 걸쳐서 N×M 격자에 대한 정보가 주어집니다.단, 최초에 부서지지 않은 포탑은 최소 2개 이상 존재합니다.
-//
-//4≤N, M≤10
-//1≤K≤1, 000
-//0≤공격력≤5, 000
 using namespace std;
 
 // 우/하/좌/상의 우선순위대로
 int dr[] = { 0, 1, 0, -1 };
 int dc[] = { 1, 0, -1, 0 };
-
-//struct SpotInfo
-//{
-//    int lr, lc, cr, cc;
-//};
 
 struct Spot
 {
@@ -108,7 +96,6 @@ struct Top
 {
     int r, c;
     int t = 0;
-    //bool isChanged = false;
 };
 
 int N, M, K;
@@ -116,11 +103,10 @@ vector<vector<int>> map(10, vector<int>(10, 0));
 vector<vector<int>> visited(10, vector<int>(10, 0));
 vector<vector<int>> visited2(10, vector<int>(10, 0));
 vector<vector<int>> isAttacked(10, vector<int>(10, 0));
-//vector< Top> t;
 vector< Spot> w;
 deque< Top> dq;
 int maxScore, ar, ac, tr, tc, shortCut;
-bool isLazerPossible;
+bool isComplete;
 
 bool cmp(Top& a, Top& b) {
     if (map[a.r][a.c] == map[b.r][b.c])
@@ -136,17 +122,6 @@ bool cmp(Top& a, Top& b) {
         return a.t > b.t;
     }
     return map[a.r][a.c] < map[b.r][b.c];
-    // 1. 공격자 선정
-    // 
-    // 부서지지 않은 포탑 중 가장 '약한' 포탑이 '공격자로 선정'됩니다.
-    // 공격자로 선정되면, N + M만큼의 공격력이 '증가'됩니다.
-
-    // 가장 약한 포탑은 다음의 기준으로 선정됩니다.
-    // 
-    // 1. 공격력이 '가장 낮은' 포탑이 가장 약한 포탑입니다.
-    // 2. 만약 공격력이 가장 낮은 포탑이 2개 이상이라면, 가장 '최근에 공격한 포탑'이 가장 약한 포탑입니다. (모든 포탑은 시점 0에 모두 공격한 경험이 있다고 가정하겠습니다.)
-    // 3. 만약 그러한 포탑이 2개 이상이라면, 각 포탑 위치의 '행과 열의 합'이 '가장 큰' 포탑이 가장 약한 포탑입니다.
-    // 4. 만약 그러한 포탑이 2개 이상이라면, 각 포탑 위치의 '열 값이 가장 큰' 포탑이 가장 약한 포탑입니다.
 }
 
 bool isOutOfBound_R(int r) {
@@ -193,6 +168,8 @@ int getShortcutBFS(int sr, int sc, int turnCnt) {
             }
         }
     }
+
+    return -1;
 }
 
 
@@ -202,16 +179,6 @@ void lazerAttack(int turnCnt) {
     map[tr][tc] -= map[ar][ac];
     isAttacked[tr][tc] = turnCnt;
     int v = map[ar][ac] / 2;
-
-    //cout << "============\n";
-    //for (int r = 0; r < N; r++)
-    //{
-    //    for (int c = 0; c < M; c++)
-    //    {
-    //        cout << visited[r][c] << " ";
-    //    }
-    //    cout << '\n';
-    //}
 
     for (int i = w.size()-2; i >= 1; i--)
     {
@@ -228,7 +195,7 @@ void laserDFS(int cnt, int turnCnt) {
 
     if (r == tr && c == tc)
     {
-        isLazerPossible = true;
+        isComplete = true;
         lazerAttack(turnCnt);
         return;
     }
@@ -249,20 +216,11 @@ void laserDFS(int cnt, int turnCnt) {
             w.pop_back();
             visited[nr][nc] = 0;
 
-            if (isLazerPossible) return;
+            if (isComplete) return;
         }
     }
 }
 
-// (2) 포탄 공격
-// 
-// 공격 대상에 포탄을 던집니다.
-// 공격 대상은 '공격자 공격력 만큼'의 피해를 받습니다.
-// 
-// 추가적으로 주위 8개의 방향에 있는 포탑도 피해를 입는데, 공격자 공격력의 '절반 만큼의 피해'를 받습니다.  
-// '공격자는' 해당 공격에 영향을 받지 '않습니다'.
-// 
-// 만약 가장자리에 포탄이 떨어졌다면, 위에서의 레이저 이동처럼 포탄의 추가 피해가 '반대편 격자에 미치게 됩니다'.
 int bDr[] = { -1, -1, -1, 0, 1, 1, 1, 0 };
 int bDc[] = { -1, 0, 1, 1, 1, 0, -1, -1 };
 
@@ -293,16 +251,13 @@ int main() {
         for (int c = 0; c < M; c++)
         {
             cin >> map[r][c];
-            if (map[r][c] > 0) dq.push_back({ r, c, map[r][c]});
+            if (map[r][c] > 0) dq.push_back({ r, c });
         }
     }
 
     for (int k = 1; k <= K; k++)
     {
-        isLazerPossible = false;
         sort(dq.begin(), dq.end(), cmp);
-
-        //bool isEnd = true;
 
         // 1개만 남게되면 걍 게임 끝
         if (dq.size() <= 1)
@@ -320,46 +275,22 @@ int main() {
 
         //N + M만큼의 공격력이 '증가'됩니다.
         map[ar][ac] += (N + M);
-        //cout << "map[ar][ac]: " << map[ar][ac] << endl;
         
         shortCut = getShortcutBFS(ar, ac, k);
+        if (shortCut != -1)
+        {
+            isComplete = false;
 
-        visited[ar][ac] = 1;
-        w.push_back({ ar, ac });
-        laserDFS(0, k);
-        w.pop_back();
-        visited[ar][ac] = 0;
-
-        //for (int i = 0; i < t.size(); i++)
-        //{
-        //    if (t[i].isDead) continue;
-        //    isEnd = false;
-        //}
-        if (!isLazerPossible)
+            visited[ar][ac] = 1;
+            w.push_back({ ar, ac });
+            laserDFS(0, k);
+            w.pop_back();
+            visited[ar][ac] = 0;
+        }
+        else
         {
             bombAttack(k);
-
-            //cout << "==== after bombAttack ====\n";
-            //for (int r = 0; r < N; r++)
-            //{
-            //    for (int c = 0; c < M; c++)
-            //    {
-            //        cout << map[r][c] << " ";
-            //    }
-            //    cout << '\n';
-            //}
         }
-        //else {
-        //    cout << "==== after laser ====\n";
-        //    for (int r = 0; r < N; r++)
-        //    {
-        //        for (int c = 0; c < M; c++)
-        //        {
-        //            cout << map[r][c] << " ";
-        //        }
-        //        cout << '\n';
-        //    }
-        //}
 
         for (int i = 0; i < dq.size(); i++)
         {
@@ -372,13 +303,6 @@ int main() {
         dq.erase(remove_if(dq.begin(), dq.end(), [&](Top& a) {
             return map[a.r][a.c] <= 0;
             }), dq.end());
-
-        // 3. 포탑 부서짐 
-        // 공격을 받아 공격력이 0 이하가 된 포탑은 부서집니다.
-
-        // 4. 포탑 정비
-        // 공격이 끝났으면, '부서지지 않은 포탑 중' '공격과 무관했던 포탑'은 공격력이 1씩 올라갑니다. 
-        // 공격과 무관하다는 뜻은 공격자도 아니고, 공격에 피해를 입은 포탑도 아니라는 뜻입니다.
 
     }
 
