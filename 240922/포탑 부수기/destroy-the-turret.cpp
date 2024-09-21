@@ -99,6 +99,11 @@ struct Spot
     int r, c;
 };
 
+struct SpotInfo
+{
+    int r, c, depth;
+};
+
 struct Top
 {
     int r, c;
@@ -109,11 +114,12 @@ struct Top
 int N, M, K;
 vector<vector<int>> map(10, vector<int>(10, 0));
 vector<vector<int>> visited(10, vector<int>(10, 0));
+vector<vector<int>> visited2(10, vector<int>(10, 0));
 vector<vector<int>> isAttacked(10, vector<int>(10, 0));
 //vector< Top> t;
 vector< Spot> w;
 deque< Top> dq;
-int maxScore, minCnt, ar, ac, tr, tc;
+int maxScore, ar, ac, tr, tc, shortCut;
 bool isLazerPossible;
 
 bool cmp(Top& a, Top& b) {
@@ -155,43 +161,39 @@ int changeR(int r) {
 }
 int changeC(int c) {
     if (c < 0) return M - 1;
-    else if (N <= c) return 0;
+    else if (M <= c) return 0;
 }
 
-//void laserBFS(int sr, int sc) {
-//    queue<SpotInfo> q;
-//
-//    for (int d = 0; d < 4; d++)
-//    {
-//        int cr = sr + dr[d];
-//        int cc = sc + dc[d];
-//
-//        if (isOutOfBound_R(cr)) cr = changeR(cr);
-//        if (isOutOfBound_C(cc)) cc = changeC(cc);
-//
-//        if (map[cr][cc] > 0)
-//        {
-//            for (int d2 = 0; d2 < 4; d2++)
-//            {
-//                int nr = cr + dr[d2];
-//                int nc = cc + dc[d2];
-//
-//                if (isOutOfBound_R(nr)) nr = changeR(nr);
-//                if (isOutOfBound_C(nc)) nc = changeC(nc);
-//
-//                q.push({ cr, cc, nr, nc });
-//            }
-//        }
-//    }
-//
-//    while (!q.empty())
-//    {
-//        int r = q.front().cr;
-//        int c = q.front().cc;
-//        q.pop();
-//
-//    }
-//}
+int getShortcutBFS(int sr, int sc, int turnCnt) {
+    queue<SpotInfo> q;
+    q.push({ sr, sc, 0 });
+    visited2[sr][sc] = turnCnt;
+
+    while (!q.empty())
+    {
+        int r = q.front().r;
+        int c = q.front().c;
+        int depth = q.front().depth;
+        q.pop();
+        
+        for (int d = 0; d < 4; d++)
+        {
+            int nr = r + dr[d];
+            int nc = c + dc[d];
+
+            if (isOutOfBound_R(nr)) nr = changeR(nr);
+            if (isOutOfBound_C(nc)) nc = changeC(nc);
+
+            if (nr == tr && nc == tc) return depth + 1;
+
+            if (map[nr][nc] > 0 && visited2[nr][nc] != turnCnt)
+            {
+                visited2[nr][nc] = turnCnt;
+                q.push({ nr, nc, depth + 1 });
+            }
+        }
+    }
+}
 
 
 // 최단 경로가 정해졌으면, 공격 대상에는 '공격자의 공격력 만큼'의 피해를 입히며, 피해를 입은 포탑은 '해당 수치만큼 공격력이 줄어듭니다'. 
@@ -200,16 +202,26 @@ void lazerAttack(int turnCnt) {
     map[tr][tc] -= map[ar][ac];
     isAttacked[tr][tc] = turnCnt;
     int v = map[ar][ac] / 2;
-    for (int i = w.size()-1; i >= 1; i++)
+
+    //cout << "============\n";
+    //for (int r = 0; r < N; r++)
+    //{
+    //    for (int c = 0; c < M; c++)
+    //    {
+    //        cout << visited[r][c] << " ";
+    //    }
+    //    cout << '\n';
+    //}
+
+    for (int i = w.size()-2; i >= 1; i--)
     {
         map[w[i].r][w[i].c] -= v;
         isAttacked[w[i].r][w[i].c] = turnCnt;
     }
-    w.clear();
 }
 
 void laserDFS(int cnt, int turnCnt) {
-    if (cnt >= minCnt) return;
+    if (cnt > shortCut) return;
 
     int r = w[w.size() - 1].r;
     int c = w[w.size() - 1].c;
@@ -218,7 +230,6 @@ void laserDFS(int cnt, int turnCnt) {
     {
         isLazerPossible = true;
         lazerAttack(turnCnt);
-        minCnt = cnt;
         return;
     }
 
@@ -237,6 +248,8 @@ void laserDFS(int cnt, int turnCnt) {
             laserDFS(cnt + 1, turnCnt);
             w.pop_back();
             visited[nr][nc] = 0;
+
+            if (isLazerPossible) return;
         }
     }
 }
@@ -307,6 +320,9 @@ int main() {
 
         //N + M만큼의 공격력이 '증가'됩니다.
         map[ar][ac] += (N + M);
+        //cout << "map[ar][ac]: " << map[ar][ac] << endl;
+        
+        shortCut = getShortcutBFS(ar, ac, k);
 
         visited[ar][ac] = 1;
         w.push_back({ ar, ac });
@@ -322,7 +338,28 @@ int main() {
         if (!isLazerPossible)
         {
             bombAttack(k);
+
+            //cout << "==== after bombAttack ====\n";
+            //for (int r = 0; r < N; r++)
+            //{
+            //    for (int c = 0; c < M; c++)
+            //    {
+            //        cout << map[r][c] << " ";
+            //    }
+            //    cout << '\n';
+            //}
         }
+        //else {
+        //    cout << "==== after laser ====\n";
+        //    for (int r = 0; r < N; r++)
+        //    {
+        //        for (int c = 0; c < M; c++)
+        //        {
+        //            cout << map[r][c] << " ";
+        //        }
+        //        cout << '\n';
+        //    }
+        //}
 
         for (int i = 0; i < dq.size(); i++)
         {
