@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <queue>
 
 using namespace std;
 
@@ -19,11 +20,17 @@ struct Golem
     int c, d;
 };
 
+struct Spot
+{
+    int r, c;
+};
+
 int R, C, K;
 vector<vector<int>> map(71, vector<int>(71, 0));
 vector<vector<int>> exitMap(71, vector<int>(71, 0));
 vector<vector<int>> visited(71, vector<int>(71, 0));
 vector<Golem> g(1001);
+queue< Spot> q;
 int maxR, totalScore;
 
 bool isInBound(int r, int c) {
@@ -80,34 +87,69 @@ void moveRight(Golem& g) {
     g.d = (g.d + 1) % 4;
 }
 
-void fairyMoveDFS(int r, int c) {
-    if (r > maxR)
+//void fairyMoveDFS(int r, int c) {
+//    if (r > maxR)
+//    {
+//        maxR = r;
+//    }
+//
+//    for (int d = 0; d < 4; d++)
+//    {
+//        int nr = r + dr[d];
+//        int nc = c + dc[d];
+//
+//        if (isInBound(nr, nc)) {
+//            if (map[nr][nc] == 0 || visited[nr][nc] == 1) continue;
+//
+//            if (map[nr][nc] == map[r][c])
+//            {
+//                visited[nr][nc] = 1;
+//                fairyMoveDFS(nr, nc);
+//                visited[nr][nc] = 0;
+//            }
+//            else if(exitMap[r][c] != 0) // <-- 다음 위치가 현재 위치랑 다르다면, 현재 위치가 출구인지 확인!
+//            {
+//                visited[nr][nc] = 1;
+//                fairyMoveDFS(nr, nc);
+//                visited[nr][nc] = 0;
+//                //int idx = map[r][c];
+//                //int g_c = g[idx].c;
+//                //int d = g[idx].d;
+//            }
+//        }
+//    }
+//}
+
+void fairyMoveBFS(int sr, int sc, int idx) {
+    q.push({ sr, sc });
+    visited[sr][sc] = idx;
+
+    while (!q.empty())
     {
-        maxR = r;
-    }
+        int r = q.front().r;
+        int c = q.front().c;
+        q.pop();
 
-    for (int d = 0; d < 4; d++)
-    {
-        int nr = r + dr[d];
-        int nc = c + dc[d];
+        maxR = max(r, maxR);
 
-        if (isInBound(nr, nc)) {
-            if (map[nr][nc] == 0 || visited[nr][nc] == 1) continue;
+        for (int d = 0; d < 4; d++)
+        {
+            int nr = r + dr[d];
+            int nc = c + dc[d];
 
-            if (map[nr][nc] == map[r][c])
-            {
-                visited[nr][nc] = 1;
-                fairyMoveDFS(nr, nc);
-                visited[nr][nc] = 0;
-            }
-            else if(exitMap[r][c] != 0) // <-- 다음 위치가 현재 위치랑 다르다면, 현재 위치가 출구인지 확인!
-            {
-                visited[nr][nc] = 1;
-                fairyMoveDFS(nr, nc);
-                visited[nr][nc] = 0;
-                //int idx = map[r][c];
-                //int g_c = g[idx].c;
-                //int d = g[idx].d;
+            if (isInBound(nr, nc)) {
+                if (map[nr][nc] == 0 || visited[nr][nc] == idx) continue;
+
+                if (map[nr][nc] == map[r][c])
+                {
+                    visited[nr][nc] = idx;
+                    q.push({ nr, nc });
+                }
+                else if (exitMap[r][c] != 0) // <-- 다음 위치가 현재 위치랑 다르다면, 현재 위치가 출구인지 확인!
+                {
+                    visited[nr][nc] = idx;
+                    q.push({ nr, nc });
+                }
             }
         }
     }
@@ -180,9 +222,10 @@ void golemMove(int i) {
                 //}
 
                 maxR = r;
-                visited[r][c] = 1;
-                fairyMoveDFS(r, c);
-                visited[r][c] = 0;
+                fairyMoveBFS(r, c, i);
+                //visited[r][c] = 1;
+                //fairyMoveDFS(r, c);
+                //visited[r][c] = 0;
 
                 totalScore += maxR;
             }
