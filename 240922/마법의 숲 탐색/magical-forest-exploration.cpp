@@ -1,4 +1,10 @@
-// 6:45 ~ 7:10, 8:10 ~ 9:23 ~ 9:39, 9:55 ~ 
+// 6:45 ~ 7:10, 8:10 ~ 9:23 ~ 9:39, 9:55 ~ 10:29 <-- 2시간 반 소요
+
+// ** 완전탐색인데 맵이 충분히 작지 않은 경우엔, DFS보다 BFS로 구현하는 게 낫다!
+//    (DFS로 구현했을 땐 시간초과 발생 --> BFS로 변경하니 바로 통과됨)
+//    => 완전탐색을 해야 할 경우, 웬만하면 BFS가 나은 듯.
+
+// ** 출구 정보는 별도의 exitMap으로 관리하니 수월 & 간편함.
 
 #include <iostream>
 #include <vector>
@@ -7,10 +13,6 @@
 
 using namespace std;
 
-//첫 번째 줄에는 숲의 크기를 의미하는 R, C, 정령의 수 K가 공백을 사이에 두고 주어집니다.
-//
-//그다음 줄부터 K개의 줄에 거쳐 각 골렘이 출발하는 열 c, 골렘의 출구 방향 정보 d가 공백을 사이에 두고 주어집니다.
-//
 //골렘의 출구 방향 정보 d는 0과 3 사이의 수로 주어지며 각각의 숫자 0, 1, 2, 3은 북, 동, 남, 서쪽을 의미합니다.
 int dr[] = { -1, 0, 1, 0 };
 int dc[] = { 0, 1, 0, -1 };
@@ -64,14 +66,6 @@ bool rightPossible(int r, int c) {
 
     return true;
 }
-
-//bool rightPossible(int r, int c) {
-//    if (isOutOfBound(r + 1, c - 1) || isOutOfBound(r + 2, c) || isOutOfBound(r + 1, c + 1)) return false;
-//
-//    if (map[r + 1][c - 1] != 0 || map[r + 2][c] != 0 || map[r + 1][c + 1] != 0) return false;
-//
-//    return true;
-//}
 
 void moveDown(int r, Golem& g) {
     
@@ -160,29 +154,23 @@ void golemMove(int i) {
     while (true)
     {
         if (downPossible(r, g[i].c)) {
-            //cout << "down\n";
-            //moveDown(r, g);
             r++;
         }
         else if (leftPossible(r, g[i].c)) {
-            //cout << "left\n";
             moveLeft(g[i]);
             r++;
         }
         else if (rightPossible(r, g[i].c))
         {
-            //cout << "right\n";
             moveRight(g[i]);
             r++;
         }
         else
         {
-            //cout << "end!\n";
             if (r <= 1)
             {
                 fill(map.begin(), map.end(), vector<int>(71, 0));
                 fill(exitMap.begin(), exitMap.end(), vector<int>(71, 0));
-                //cout << "out!\n";
             }
             else
             {
@@ -201,29 +189,10 @@ void golemMove(int i) {
                 int ec = c + dc[g[i].d];
                 exitMap[er][ec] = i;
 
-                //cout << "=== map ===" << endl;
-                //for (int r = 1; r <= R; r++)
-                //{
-                //    for (int c = 1; c <= C; c++)
-                //    {
-                //        cout << map[r][c] << " ";
-                //    }
-                //    cout << endl;
-                //}
-                //cout << endl;
-                //cout << "=== exitMap ===" << endl;
-                //for (int r = 1; r <= R; r++)
-                //{
-                //    for (int c = 1; c <= C; c++)
-                //    {
-                //        cout << exitMap[r][c] << " ";
-                //    }
-                //    cout << endl;
-                //}
-
                 maxR = r;
                 fairyMoveBFS(r, c, i);
-                //visited[r][c] = 1;
+
+                //visited[r][c] = 1; <-- DFS로 구현하니, 시간초과 발생..!
                 //fairyMoveDFS(r, c);
                 //visited[r][c] = 0;
 
@@ -234,7 +203,6 @@ void golemMove(int i) {
     }
 }
 
-// 각 정령들이 최종적으로 위치한 행의 총합을 출력하세요.
 int main() {
     totalScore = 0;
     cin >> R >> C >> K;
@@ -243,9 +211,7 @@ int main() {
         cin >> g[i].c >> g[i].d;
 
         golemMove(i);
-        //cout << "totalScore: " << totalScore << endl;
     }
-
     cout << totalScore << '\n';
     return 0;
 }
