@@ -37,12 +37,10 @@ struct Top
 int N, M, K;
 vector<vector<int>> map(10, vector<int>(10, 0));
 vector<vector<int>> visited(10, vector<int>(10, 0));
-vector<vector<int>> visited2(10, vector<int>(10, 0));
+vector<vector<Spot>> back(10, vector<Spot>(10));
 vector<vector<int>> isAttacked(10, vector<int>(10, 0));
-vector< Spot> w;
 deque< Top> dq;
-int maxScore, ar, ac, tr, tc, shortCut;
-bool isComplete;
+int maxScore, ar, ac, tr, tc;
 
 bool cmp(Top& a, Top& b) {
     if (map[a.r][a.c] == map[b.r][b.c])
@@ -75,18 +73,48 @@ int changeC(int c) {
     else if (M <= c) return 0;
 }
 
-int getShortcutBFS(int sr, int sc, int turnCnt) {
-    queue<SpotInfo> q;
-    q.push({ sr, sc, 0 });
-    visited2[sr][sc] = turnCnt;
+// 최단 경로가 정해졌으면, 공격 대상에는 '공격자의 공격력 만큼'의 피해를 입히며, 피해를 입은 포탑은 '해당 수치만큼 공격력이 줄어듭니다'. 
+// 또한 공격 대상을 제외한 '레이저 경로에 있는 포탑도' 공격을 받게 되는데, 이 포탑은 공격자 공격력의 '절반 만큼의 공격'을 받습니다. (절반이라 함은 공격력을 2로 나눈 몫을 의미합니다.)
+void lazerAttack(int turnCnt) {
+    map[tr][tc] -= map[ar][ac];
+    isAttacked[tr][tc] = turnCnt;
+    int v = map[ar][ac] / 2;
+
+    int cr = tr;
+    int cc = tc;
+
+    while (true)
+    {
+        int br = back[cr][cc].r;
+        int bc = back[cr][cc].c;
+
+        if (br == ar && bc == ac) break;
+
+        map[br][bc] -= v;
+        isAttacked[br][bc] = turnCnt;
+
+        cr = br;
+        cc = bc;
+    }
+}
+
+bool laserBFS(int turnCnt) {
+    queue< Spot> q;
+    q.push({ ar, ac });
+    visited[ar][ac] = turnCnt;
 
     while (!q.empty())
     {
         int r = q.front().r;
         int c = q.front().c;
-        int depth = q.front().depth;
         q.pop();
-        
+
+        if (r == tr && c == tc)
+        {
+            lazerAttack(turnCnt);
+            return true;
+        }
+
         for (int d = 0; d < 4; d++)
         {
             int nr = r + dr[d];
@@ -95,67 +123,83 @@ int getShortcutBFS(int sr, int sc, int turnCnt) {
             if (isOutOfBound_R(nr)) nr = changeR(nr);
             if (isOutOfBound_C(nc)) nc = changeC(nc);
 
-            if (nr == tr && nc == tc) return depth + 1;
-
-            if (map[nr][nc] > 0 && visited2[nr][nc] != turnCnt)
+            if (map[nr][nc] > 0 && visited[nr][nc] != turnCnt)
             {
-                visited2[nr][nc] = turnCnt;
-                q.push({ nr, nc, depth + 1 });
+                visited[nr][nc] = turnCnt;
+                q.push({ nr,nc });
+                back[nr][nc] = { r,c };
             }
         }
     }
-
-    return -1;
+    return false;
 }
 
+//int getShortcutBFS(int sr, int sc, int turnCnt) {
+//    queue<SpotInfo> q;
+//    q.push({ sr, sc, 0 });
+//    visited2[sr][sc] = turnCnt;
+//
+//    while (!q.empty())
+//    {
+//        int r = q.front().r;
+//        int c = q.front().c;
+//        int depth = q.front().depth;
+//        q.pop();
+//        
+//        for (int d = 0; d < 4; d++)
+//        {
+//            int nr = r + dr[d];
+//            int nc = c + dc[d];
+//
+//            if (isOutOfBound_R(nr)) nr = changeR(nr);
+//            if (isOutOfBound_C(nc)) nc = changeC(nc);
+//
+//            if (nr == tr && nc == tc) return depth + 1;
+//
+//            if (map[nr][nc] > 0 && visited2[nr][nc] != turnCnt)
+//            {
+//                visited2[nr][nc] = turnCnt;
+//                q.push({ nr, nc, depth + 1 });
+//            }
+//        }
+//    }
+//
+//    return -1;
+//}
 
-// 최단 경로가 정해졌으면, 공격 대상에는 '공격자의 공격력 만큼'의 피해를 입히며, 피해를 입은 포탑은 '해당 수치만큼 공격력이 줄어듭니다'. 
-// 또한 공격 대상을 제외한 '레이저 경로에 있는 포탑도' 공격을 받게 되는데, 이 포탑은 공격자 공격력의 '절반 만큼의 공격'을 받습니다. (절반이라 함은 공격력을 2로 나눈 몫을 의미합니다.)
-void lazerAttack(int turnCnt) {
-    map[tr][tc] -= map[ar][ac];
-    isAttacked[tr][tc] = turnCnt;
-    int v = map[ar][ac] / 2;
-
-    for (int i = w.size()-2; i >= 1; i--)
-    {
-        map[w[i].r][w[i].c] -= v;
-        isAttacked[w[i].r][w[i].c] = turnCnt;
-    }
-}
-
-void laserDFS(int cnt, int turnCnt) {
-    if (cnt > shortCut) return;
-
-    int r = w[w.size() - 1].r;
-    int c = w[w.size() - 1].c;
-
-    if (r == tr && c == tc)
-    {
-        isComplete = true;
-        lazerAttack(turnCnt);
-        return;
-    }
-
-    for (int d = 0; d < 4; d++)
-    {
-        int nr = r + dr[d];
-        int nc = c + dc[d];
-
-        if (isOutOfBound_R(nr)) nr = changeR(nr);
-        if (isOutOfBound_C(nc)) nc = changeC(nc);
-
-        if (map[nr][nc] > 0 && visited[nr][nc] != 1)
-        {
-            visited[nr][nc] = 1;
-            w.push_back({ nr, nc });
-            laserDFS(cnt + 1, turnCnt);
-            w.pop_back();
-            visited[nr][nc] = 0;
-
-            if (isComplete) return;
-        }
-    }
-}
+//void laserDFS(int cnt, int turnCnt) {
+//    if (cnt > shortCut) return;
+//
+//    int r = w[w.size() - 1].r;
+//    int c = w[w.size() - 1].c;
+//
+//    if (r == tr && c == tc)
+//    {
+//        isComplete = true;
+//        lazerAttack(turnCnt);
+//        return;
+//    }
+//
+//    for (int d = 0; d < 4; d++)
+//    {
+//        int nr = r + dr[d];
+//        int nc = c + dc[d];
+//
+//        if (isOutOfBound_R(nr)) nr = changeR(nr);
+//        if (isOutOfBound_C(nc)) nc = changeC(nc);
+//
+//        if (map[nr][nc] > 0 && visited[nr][nc] != 1)
+//        {
+//            visited[nr][nc] = 1;
+//            w.push_back({ nr, nc });
+//            laserDFS(cnt + 1, turnCnt);
+//            w.pop_back();
+//            visited[nr][nc] = 0;
+//
+//            if (isComplete) return;
+//        }
+//    }
+//}
 
 int bDr[] = { -1, -1, -1, 0, 1, 1, 1, 0 };
 int bDc[] = { -1, 0, 1, 1, 1, 0, -1, -1 };
@@ -211,19 +255,8 @@ int main() {
 
         //N + M만큼의 공격력이 '증가'됩니다.
         map[ar][ac] += (N + M);
-        
-        shortCut = getShortcutBFS(ar, ac, k);
-        if (shortCut != -1)
-        {
-            isComplete = false;
 
-            visited[ar][ac] = 1;
-            w.push_back({ ar, ac });
-            laserDFS(0, k);
-            w.pop_back();
-            visited[ar][ac] = 0;
-        }
-        else
+        if (!laserBFS(k))
         {
             bombAttack(k);
         }
