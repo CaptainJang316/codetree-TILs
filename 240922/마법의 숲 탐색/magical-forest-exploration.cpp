@@ -45,7 +45,7 @@ bool downPossible(int r, int c) {
 bool leftPossible(int r, int c) {
     if (isOutOfBound(r, c - 2) || isOutOfBound(r + 1, c - 2) || isOutOfBound(r + 1, c - 1) || isOutOfBound(r + 2, c - 1)) return false;
 
-    if (map[r][c - 2] != 0 || map[r + 1][c - 2] != 0 || map[r + 1][c - 1] != 0 || map[r + 2][c - 1] != 0) return false;
+    if ((r >= 0 && map[r][c - 2] != 0) || map[r + 1][c - 2] != 0 || map[r + 1][c - 1] != 0 || map[r + 2][c - 1] != 0) return false;
 
     return true;
 }
@@ -53,7 +53,7 @@ bool leftPossible(int r, int c) {
 bool rightPossible(int r, int c) {
     if (isOutOfBound(r, c + 2) || isOutOfBound(r + 1, c + 2) || isOutOfBound(r + 1, c + 1) || isOutOfBound(r + 2, c + 1)) return false;
 
-    if (map[r][c + 2] != 0 || map[r + 1][c + 2] != 0 || map[r + 1][c + 1] != 0 || map[r + 2][c + 1] != 0) return false;
+    if ((r >= 0 && map[r][c + 2] != 0) || map[r + 1][c + 2] != 0 || map[r + 1][c + 1] != 0 || map[r + 2][c + 1] != 0) return false;
 
     return true;
 }
