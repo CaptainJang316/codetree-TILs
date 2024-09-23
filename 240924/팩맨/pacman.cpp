@@ -102,11 +102,14 @@ int main() {
 
         // 1번: 몬스터 복제
         for (int i = 1; i <= m; i++) {
+            if (mList[i].isDead) continue;
             mList.push_back({ mList[i].r, mList[i].c, mList[i].d, true });
         }
 
         // 2번: 몬스터 이동
         for (int i = 1; i <= m; i++) {
+
+            if (mList[i].isDead) continue;
 
             int r = mList[i].r;
             int c = mList[i].c;
