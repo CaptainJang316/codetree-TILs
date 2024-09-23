@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -101,15 +102,11 @@ int main() {
 
         // 1번: 몬스터 복제
         for (int i = 1; i <= m; i++) {
-            if (mList[i].isDead) continue;
-
             mList.push_back({ mList[i].r, mList[i].c, mList[i].d, true });
         }
 
         // 2번: 몬스터 이동
         for (int i = 1; i <= m; i++) {
-
-            if (mList[i].isDead) continue;
 
             int r = mList[i].r;
             int c = mList[i].c;
@@ -137,6 +134,10 @@ int main() {
         findPackmanWayDFS(sr, sc, 0, 0);
         packmanMove();
 
+        mList.erase(remove_if(mList.begin() + 1, mList.end(), [](Monstor & a) {
+            return a.isDead;
+            }), mList.end());
+
         // 4번: 시체 1 감소
         for (int r = 1; r <= 4; r++)
         {
@@ -147,10 +148,13 @@ int main() {
         }
 
         // 5번: 알 부화
-        for (int i = m + 1; i < mList.size(); i++)
+        for (int i = 1; i < mList.size(); i++)
         {
-            mList[i].isEgg = false;
-            map[mList[i].r][mList[i].c].push_back({ i });
+            if (mList[i].isEgg)
+            {
+                mList[i].isEgg = false;
+                map[mList[i].r][mList[i].c].push_back(i);
+            }
         }
         m = mList.size() - 1;
     }
@@ -158,7 +162,6 @@ int main() {
     int aliveNum = 0;
     for (int i = 1; i < mList.size(); i++)
     {
-        if (mList[i].isDead) continue;
         if (mList[i].isEgg) break;
 
         aliveNum++;
