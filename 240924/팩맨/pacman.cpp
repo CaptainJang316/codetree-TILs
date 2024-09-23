@@ -162,6 +162,7 @@ int main() {
     int aliveNum = 0;
     for (int i = 1; i < mList.size(); i++)
     {
+        if (mList[i].isDead) continue;
         if (mList[i].isEgg) break;
 
         aliveNum++;
