@@ -1,9 +1,24 @@
 // 7:40 ~ 8:40, 10:53 ~ 11:59 <-- 2시간 10분 소요
 
+// ** '정해진' 짧은 길이만큼 DFS로 탐색하되, 갔던 곳으로 되돌아오는 게 가능한 경우엔, visited를 좀 더 잘 사용해야 한다!
+
+//if (isInBound(nr, nc))
+//{
+//    pWay.push_back({ nr, nc });
+//    if (visited[nr][nc] != 1) {
+//        visited[nr][nc] = 1;
+//        findPackmanWayDFS(nr, nc, score + map[nr][nc].size(), cnt + 1);
+//        visited[nr][nc] = 0; <-- 처음에 이걸 1로 만든 단계에서만, 이걸 다시 0으로 바꿀 수 있어야 한다..!
+//    }
+//    else {
+//        findPackmanWayDFS(nr, nc, score, cnt + 1);
+//    }
+//    pWay.pop_back();
+//}
+
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <algorithm>
 
 using namespace std;
 
@@ -46,7 +61,7 @@ void findPackmanWayDFS(int r, int c, int score, int cnt) {
             sr = r;
             sc = c;
         }
-        
+
         return;
     }
 
@@ -102,14 +117,11 @@ int main() {
 
         // 1번: 몬스터 복제
         for (int i = 1; i <= m; i++) {
-            if (mList[i].isDead) continue;
             mList.push_back({ mList[i].r, mList[i].c, mList[i].d, true });
         }
 
         // 2번: 몬스터 이동
         for (int i = 1; i <= m; i++) {
-
-            if (mList[i].isDead) continue;
 
             int r = mList[i].r;
             int c = mList[i].c;
@@ -137,10 +149,6 @@ int main() {
         findPackmanWayDFS(sr, sc, 0, 0);
         packmanMove();
 
-        mList.erase(remove_if(mList.begin() + 1, mList.end(), [](Monstor & a) {
-            return a.isDead;
-            }), mList.end());
-
         // 4번: 시체 1 감소
         for (int r = 1; r <= 4; r++)
         {
@@ -148,24 +156,25 @@ int main() {
             {
                 if (dead[r][c] > 0) dead[r][c] -= 1;
             }
-        }
+        } 
 
         // 5번: 알 부화
-        for (int i = 1; i < mList.size(); i++)
+        for (int i = m + 1; i < mList.size(); i++)
         {
-            if (mList[i].isEgg)
-            {
-                mList[i].isEgg = false;
-                map[mList[i].r][mList[i].c].push_back(i);
-            }
+            mList[i].isEgg = false;
+            map[mList[i].r][mList[i].c].push_back({ i });
         }
+
+        mList.erase(remove_if(mList.begin() + 1, mList.begin() + m, [](Monstor& a) {
+            return a.isDead;
+            }), mList.end());
+
         m = mList.size() - 1;
     }
 
     int aliveNum = 0;
     for (int i = 1; i < mList.size(); i++)
     {
-        if (mList[i].isDead) continue;
         if (mList[i].isEgg) break;
 
         aliveNum++;
