@@ -19,6 +19,7 @@
 #include <iostream>
 #include <vector>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -167,7 +168,7 @@ int main() {
 
         mList.erase(remove_if(mList.begin() + 1, mList.begin() + m, [](Monstor& a) {
             return a.isDead;
-            }), mList.end());
+            }), mList.begin() + m);
 
         m = mList.size() - 1;
     }
