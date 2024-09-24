@@ -1,25 +1,8 @@
 // 7:40 ~ 8:40, 10:53 ~ 11:59 <-- 2시간 10분 소요
 
-// ** '정해진' 짧은 길이만큼 DFS로 탐색하되, 갔던 곳으로 되돌아오는 게 가능한 경우엔, visited를 좀 더 잘 사용해야 한다!
-
-//if (isInBound(nr, nc))
-//{
-//    pWay.push_back({ nr, nc });
-//    if (visited[nr][nc] != 1) {
-//        visited[nr][nc] = 1;
-//        findPackmanWayDFS(nr, nc, score + map[nr][nc].size(), cnt + 1);
-//        visited[nr][nc] = 0; <-- 처음에 이걸 1로 만든 단계에서만, 이걸 다시 0으로 바꿀 수 있어야 한다..!
-//    }
-//    else {
-//        findPackmanWayDFS(nr, nc, score, cnt + 1);
-//    }
-//    pWay.pop_back();
-//}
-
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <algorithm>
 
 using namespace std;
 
@@ -41,10 +24,15 @@ int pDr[] = { -1, 0, 1, 0 };
 int pDc[] = { 0, -1, 0, 1 };
 
 int m, t, sr, sc;
-vector<vector<deque<int>>> map(5, vector<deque<int>>(5));
+vector<vector<vector<int>>> map(5, vector<vector<int>>(5, vector<int>(8, 0)));
+vector<vector<vector<int>>> temp(5, vector<vector<int>>(5, vector<int>(8, 0)));
+vector<vector<vector<int>>> eggMap(5, vector<vector<int>>(5, vector<int>(8, 0)));
+vector<vector<int>> nMap(5, vector<int>(5, 0));
+vector<vector<int>> temp_nMap(5, vector<int>(5, 0));
+vector<vector<int>> egg_nMap(5, vector<int>(5, 0));
 vector<vector<int>> visited(5, vector<int>(5, 0));
 vector<vector<int>> dead(5, vector<int>(5, 0));
-vector<Monstor> mList(1);
+//vector<Monstor> mList(1);
 vector<Spot> pWay;
 vector<Spot> bestWay;
 int maxScore;
@@ -76,7 +64,7 @@ void findPackmanWayDFS(int r, int c, int score, int cnt) {
             pWay.push_back({ nr, nc });
             if (visited[nr][nc] != 1) {
                 visited[nr][nc] = 1;
-                findPackmanWayDFS(nr, nc, score + map[nr][nc].size(), cnt + 1);
+                findPackmanWayDFS(nr, nc, score + nMap[nr][nc], cnt + 1);
                 visited[nr][nc] = 0; // <-- 처음에 이걸 1로 만든 단계에서만, 이걸 다시 0으로 바꿀 수 있어야 한다..!
             }
             else {
@@ -93,13 +81,30 @@ void packmanMove() {
         int r = bestWay[i].r;
         int c = bestWay[i].c;
 
-        while (map[r][c].size() > 0)
+        if (nMap[r][c] > 0)
         {
-            mList[map[r][c][0]].isDead = true;
-            map[r][c].pop_front();
+            fill(map[r][c].begin(), map[r][c].end(), 0);
+            nMap[r][c] = 0;
             dead[r][c] = 3;
         }
     }
+}
+
+int findDir(int r, int c, int d) {
+    int dir = d;
+    for (int i = 0; i < 8; i++)
+    {
+        int nr = r + dr[dir];
+        int nc = c + dc[dir];
+
+        if (isInBound(nr, nc) && (nr != sr || nc != sc) && dead[nr][nc] == 0) {
+            return dir;
+        }
+        else {
+            dir = (dir + 1) % 8;
+        }
+    }
+    return -1;
 }
 
 int main() {
@@ -109,41 +114,79 @@ int main() {
     for (int i = 1; i <= m; i++) {
         int r, c, d;
         cin >> r >> c >> d;
-        mList.push_back({ r, c, d - 1 });
-        map[r][c].push_back({ i });
+        map[r][c][d-1] += 1;
+        nMap[r][c] += 1;
     }
 
     for (int k = 1; k <= t; k++)
     {
-
         // 1번: 몬스터 복제
-        for (int i = 1; i <= m; i++) {
-            mList.push_back({ mList[i].r, mList[i].c, mList[i].d, true });
-        }
-
-        // 2번: 몬스터 이동
-        for (int i = 1; i <= m; i++) {
-
-            int r = mList[i].r;
-            int c = mList[i].c;
-            int d = mList[i].d;
-
-            for (int j = 0; j < 8; j++) {
-                int nr = r + dr[d];
-                int nc = c + dc[d];
-
-                if (isInBound(nr, nc) && (nr != sr || nc != sc) && dead[nr][nc] == 0) {
-                    map[r][c].pop_front();
-                    map[nr][nc].push_back(i);
-                    mList[i].r = nr;
-                    mList[i].c = nc;
-                    break;
-                }
-                else {
-                    mList[i].d = d = (d + 1) % 8;
+        for (int r = 1; r <= 4; r++)
+        {
+            for (int c = 1; c <= 4; c++)
+            {
+                if (nMap[r][c] > 0)
+                {
+                    for (int d = 0; d < 8; d++)
+                    {
+                        if (map[r][c][d] > 0)
+                        {
+                            eggMap[r][c][d] = map[r][c][d];
+                        }
+                    }
+                    egg_nMap[r][c] += nMap[r][c];
                 }
             }
         }
+
+        // 2번: 몬스터 이동
+        for (int r = 1; r <= 4; r++)
+        {
+            for (int c = 1; c <= 4; c++)
+            {
+                if (nMap[r][c] > 0)
+                {
+                    for (int d = 0; d < 8; d++)
+                    {
+                        if (map[r][c][d] == 0) continue;
+
+                        int nd = findDir(r, c, d);
+
+                        if (nd != -1)
+                        {
+                            int nr = r + dr[nd];
+                            int nc = c + dc[nd];
+
+                            temp[nr][nc][nd] += map[r][c][d];
+
+                            temp_nMap[nr][nc] += map[r][c][d];
+                            map[r][c][d] = 0;
+
+                            nMap[r][c] = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int r = 1; r <= 4; r++)
+        {
+            for (int c = 1; c <= 4; c++)
+            {
+                if (temp_nMap[r][c] > 0)
+                {
+                    for (int d = 0; d < 8; d++)
+                    {
+                        if (temp[r][c][d] == 0) continue;
+
+                        map[r][c][d] = temp[r][c][d];
+                    }
+                    nMap[r][c] += temp_nMap[r][c];
+                    temp_nMap[r][c] = 0;
+                }
+            }
+        }
+        fill(temp.begin(), temp.end(), vector< vector<int>>(5, vector<int>(8, 0)));
 
         // 3번: 팩맨 이동(이 문제에선, 처음 위치에 visited 처리하지 않는다)
         maxScore = -1;
@@ -157,28 +200,36 @@ int main() {
             {
                 if (dead[r][c] > 0) dead[r][c] -= 1;
             }
-        } 
-
-        // 5번: 알 부화
-        for (int i = m + 1; i < mList.size(); i++)
-        {
-            mList[i].isEgg = false;
-            map[mList[i].r][mList[i].c].push_back({ i });
         }
 
-        mList.erase(remove_if(mList.begin() + 1, mList.end(), [](Monstor& a) {
-            return a.isDead;
-            }), mList.end());
+        // 5번: 알 부화
+        for (int r = 1; r <= 4; r++)
+        {
+            for (int c = 1; c <= 4; c++)
+            {
+                if (egg_nMap[r][c] > 0)
+                {
+                    for (int d = 0; d < 8; d++)
+                    {
+                        if (eggMap[r][c][d] == 0) continue;
 
-        m = mList.size() - 1;
+                        map[r][c][d] += eggMap[r][c][d];
+                        eggMap[r][c][d] = 0;
+                    }
+                    nMap[r][c] += egg_nMap[r][c];
+                    egg_nMap[r][c] = 0;
+                }
+            }
+        }
     }
 
     int aliveNum = 0;
-    for (int i = 1; i < mList.size(); i++)
+    for (int r = 1; r <= 4; r++)
     {
-        if (mList[i].isEgg) break;
-
-        aliveNum++;
+        for (int c = 1; c <= 4; c++)
+        {
+            if (nMap[r][c] > 0) aliveNum += nMap[r][c];
+        }
     }
     cout << aliveNum << '\n';
 
