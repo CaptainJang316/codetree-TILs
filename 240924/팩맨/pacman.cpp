@@ -117,15 +117,11 @@ int main() {
 
         // 1번: 몬스터 복제
         for (int i = 1; i <= m; i++) {
-            if (mList[i].isDead) continue;
-
             mList.push_back({ mList[i].r, mList[i].c, mList[i].d, true });
         }
 
         // 2번: 몬스터 이동
         for (int i = 1; i <= m; i++) {
-
-            if (mList[i].isDead) continue;
 
             int r = mList[i].r;
             int c = mList[i].c;
@@ -169,13 +165,16 @@ int main() {
             map[mList[i].r][mList[i].c].push_back({ i });
         }
 
+        mList.erase(remove_if(mList.begin() + 1, mList.end(), [](Monstor& a) {
+            return a.isDead;
+            }), mList.end());
+
         m = mList.size() - 1;
     }
 
     int aliveNum = 0;
     for (int i = 1; i < mList.size(); i++)
     {
-        if (mList[i].isDead) continue;
         if (mList[i].isEgg) break;
 
         aliveNum++;
