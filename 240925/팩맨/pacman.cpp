@@ -1,5 +1,3 @@
-// 7:40 ~ 8:40, 10:53 ~ 11:59 <-- 2시간 10분 소요
-
 #include <iostream>
 #include <vector>
 #include <queue>
