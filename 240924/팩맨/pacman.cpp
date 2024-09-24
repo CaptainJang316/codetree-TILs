@@ -166,9 +166,9 @@ int main() {
             map[mList[i].r][mList[i].c].push_back({ i });
         }
 
-        mList.erase(remove_if(mList.begin() + 1, mList.begin() + m, [](Monstor& a) {
+        mList.erase(remove_if(mList.begin() + 1, mList.end(), [](Monstor& a) {
             return a.isDead;
-            }), mList.begin() + m);
+            }), mList.end());
 
         m = mList.size() - 1;
     }
